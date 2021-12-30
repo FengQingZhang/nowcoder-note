@@ -119,3 +119,67 @@ public boolean await(long timeout, TimeUnit unit) throws InterruptedException
 public void countDown() 
 ```
 
+# 2021.12.30
+
+## List、Set、Map
+
+List,Set继承了Collection接口，而Map是一个单独的接口； 
+
+  List的子类有ArrayList、LinedList和Vector：LinedList和Vector的底层都是基于链表，而ArrayList的底层是基于线性表。LinedList和ArrayList的共同点是线程是不安全的，不同点是ArrayList在做增删元素的时候，效率高，查询效率低；linedList恰好相反；这和它们的底层有关系。 
+
+  Set的实现类HashSet,TreeSet。这俩个类都保存了元素的唯一性，但是hashSet的元素是无需的，而TreeSet的元素是有序的。 
+
+  Map的实现类：HashMap,HashTable它们的区别是HashMap的key可以为null，而HashTable的key不能为Null; 
+  当往Map集合中放入相同的key时，前者的key会覆盖后者的key。
+
+## 抽象类和接口不能实例化
+
+## 泛型
+
+泛型仅仅是java的语法糖，他不会影响java虚拟机生成的汇编代码，在编译阶段，虚拟机就会把泛型的类型擦除，还原成没有泛型的代码，顶多编译速度稍微慢一些，执行速度是完成没有什么区别的，
+
+## 类型自动转换规则
+
+### 概述
+
+自动类型转换也叫隐式类型转换
+
+### 规则
+
+1. 若参与运算的数据类不同，则先转换成同一个类型，然后进行运算，
+
+2. 转换按数据长度增加的方向进行，以保证精度不降低。如果一个操作数是long型，计算结果就是long型；如果一个操作数是float型，计算结果就是float型；如果一个操作数是double型，计算结果就是double型。例如int型和long型运算时，先把int量转成long型后再进行运算。
+
+3. 所有的浮点运算都是以双精度进行的，即使仅含float单精度量运算的表达式，也要先转换成double型，再作运算。
+
+4. char型和short型参与运算时，必须先转换成int型。
+
+5. 在赋值运算中，赋值号两边的数据类型不同时，需要把右边表达式的类型将转换为左边变量的类型。如果右边表达式的数据类型长度比左边长时，将丢失一部分数据，这样会降低精度。
+
+   ![](img/类型自动转换的规则.png)
+
+   
+
+### 数据类型只会自动提升，不能自动降低
+
+int值可以赋值给long，float，double型变量，不能赋值给byte、short、char型变量
+
+```java
+int a =66;
+//没报错
+long b = a;
+float c = a;
+double d = a;
+//报错
+byte e = a;
+short f = a;
+char g =a;
+```
+
+### Java中整数默认的数据类型是int类型
+
+所有长度低于int的类型（byte、short、char）在运算之后结果将会被提升为int型
+
+## java锁的种类
+
+http://ifeve.com/java_lock_see/
