@@ -183,3 +183,101 @@ char g =a;
 ## java锁的种类
 
 http://ifeve.com/java_lock_see/
+
+# 2021.12.31
+
+## 事务隔离
+
+​	在操作系统中，为了有效并发读取数据的正确性，提出的事务隔离级别；为了解决更新丢失，脏读，不可重读（包括虚读和幻读）等问题，在标准SQL规范中，定义了4个事务隔离级别，分别为未授权读取，也称为读未提交（read uncommitted）；授权读取，也称为读提交（read committed）;可重复读取（repeatable read）；序列化（Serializable）
+
+|                  | 脏读 | 不可重复读 | 幻读 |
+| ---------------- | ---- | ---------- | ---- |
+| read uncommitted | √    | √          | √    |
+| read committed   | ×    | √          | √    |
+| repeatable read  | ×    | ×          | √    |
+| serializable     | ×    | ×          | ×    |
+
+## HashMap
+
+Map是键值对集合。其中key列就是一个集合，key不能重复，但是value可以重复。HashMap、TreeMap和Hashtable是Map的三个主要的实现类。HashTable是线程安全的，不能存储null值；HashMap不是线程安全的，可以存储null值。
+
+## 默认类型
+
+接口中的变量默认是public static final的，方法默认是public abstract的
+
+## 表达式数据类型自动提升
+
+1. 所有的byte,short,char类型的值将提升为int型；
+2. 如果有一个操作数是long型，计算结果是long型；
+3. 如果有一个操作数是float型，计算结果是float型；
+4. 如果有一个操作数是double型，计算结果是double型；
+5. 而声明为final的变量，不会被转换。
+
+## Queue
+
+### LinkedBlockingQueue
+
+基于链接节点的可选限定的blocking queue。这个队列元素FIFO（先进先出）。队列的头部是队列中最长的元素。队列的尾部是队列中最短时间的元素。新元素插入队列的尾部，队列检索操作获取队列头部的元素。链接队列通常具有比基于阵列的队列更高的吞吐量，但在大多数并发应用程序中的可预测性能较低。（ps：blocking queue说明：不接受null元素；可能是容量有限的；实现被设计为主要用于生产者-消费者队列；不支持任何类型的“关闭”或者“关闭”操作，表示不再添加项目实现是线程安全的）
+
+### PriorityQueue
+
+1. 基于优先级堆的无限优先级queue。优先级队列的元素根据它们的有序natural ordering，或由一个Comparator在队列构造的时候提供。这取决于所使用的构造方法。优先队列不允许null元素。依靠自然排序的优先级队列也不允许插入不可比较的对象（这样做可能导致ClassCastException）
+2. 该队列的头部是想对于顺序的最小元素。如果多个元素被绑定到最小值，那么头就是这些元素之一，关系被破坏。队列检索操作poll，remove，peek和element访问在队列的头部的元件。
+3. 优先级队列是无限制的，但是具有管理用于在队列上存储元素的数组的大小的内部容量。它始终至少与队列大小一样大。当元素被添加到优先级队列中时，其容量会自动增长。没有规定增长政策的细节。
+4. 该类及其迭代器实现Collection和Iterator接口的所有可选方法。 方法iterator()中提供的迭代器不能保证以任何特定顺序遍历优先级队列的元素。 如果需要有序遍历，请考虑使用Arrays.sort(pq.toArray()) 。
+5. 请注意，此实现不同步。 如果任何线程修改队列，多线程不应同时访问PriorityQueue实例。 而是使用线程安全的PriorityBlockingQueue类。
+6. 实现注意事项：此实现提供了O（log(n)）的时间入队和出队方法（ offer ， poll ， remove()和add ）; remove(Object)和contains(Object)方法的线性时间; 和恒定时间检索方法（ peek ， element和size ）。
+
+### ConcurrentLinkedQueue
+
+一个基于链接节点的无界线程安全队列(双端队列)，它采用先进先出的规则对节点进行排序，当我们添加一个元素的时候，它会添加到队列的尾部，当我们获取一个元素时，它会返回队列头部的元素。是许多线程将共享对公共集合的访问的适当选择。像大多数其他并发集合实现一样，此类不允许使用null元素。
+
+## 流
+
+### 分类
+
+按照流是否直接与特定的地方（如磁盘、内存设备等）相连，分为节点流和处理流两类。
+
+节点流：可以从或向一个特定的地方（节点）读写数据。如FileRead二
+
+处理流：是对一个已存在的流的连接和封装，通过所封装的流的功能调用实现数据读写。如bufferedReader处理流的构造方法总是要带一个其他的流对象做参数，一个流对象经过其他流的多次包装，称为流的链接。
+
+### 节点流
+
+#### 文件
+
+FileInputStream FileOutputStream FileReader FileWriter 文件进行处理的节点流。
+
+#### 字符串
+
+StringReader StringWrite对字符串进行处理的节点流
+
+#### 数组
+
+ByteArrayInputStream ByteArrayOutputStream CharArrayReader CharArrayWriter 对数组进行处理的节点流（对应的不再是文件，而是内存中的一个数组）。
+
+#### 管道
+
+PipedInputStream PipedOutputStream 
+
+PipedReader PipedWriter 对管道进行处理节点流
+
+### 处理流
+
+#### 缓冲流
+
+BufferedInputStream BufferedOutputStream BufferedReader BufferedWriter 增加缓冲功能，避免频繁读写硬盘
+
+#### 转换流
+
+inputStreamReader outputStreamReader 实现字节流和字符流之间的转换。
+
+#### 数据流
+
+DataInputStream DataOutputStream等提供将基础数据类型写入到文件中，或者读取处理。
+
+### 流的关闭
+
+1. 一般情况下是：先打开的后关闭，后打开的先关闭。
+2. 另一种情况：看依赖关系，如果流a依赖流b，应该先关闭流a，再关闭流b。例如，处理流a依赖节点流b，应先a后b。
+3. 可以只关闭处理流，不用关闭节点流。处理流关闭的时候，会调用其处理的节点流的关闭方法。
