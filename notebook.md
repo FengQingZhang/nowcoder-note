@@ -304,3 +304,39 @@ java在序列化时不hi实例化static变量和transient修饰的变量，因�
 ## 调用子类构造方法
 
 调用子类构造方法时，必须先调用父类构造方法，由于父类直接书写了构造方法，所以子类构造方法不能调用父类的默认构造方法，因此编译错误。
+
+# 2022.1.2
+
+## 接口可以多继承
+
+## 修饰符
+
+### private
+
+只能在类内被访问
+
+### 无修饰符
+
+即使default能被这个类和所在包中的类访问
+
+### public
+
+任何类都可以访问
+
+### protected 
+
+能被这个类和包中的其他类还有他的子类访问
+
+## ServletContext与ServletConfig
+
+ServletContext对象：servlet容器在启动时会加载web应用，并为每个web应用创建唯一的servlet context对象，可以把ServletContext看成是一个Web应用的服务器端组件的共享内存，在ServletContext中可以存放共享数据。ServletContext对象是真正的一个全局对象，凡是web容器中的Servlet都可以访问。
+
+
+     整个web应用只有唯一的一个ServletContext对象
+
+
+  servletConfig对象：用于封装servlet的配置信息。从一个servlet被实例化后，对任何客户端在任何时候访问有效，但仅对servlet自身有效，一个servlet的ServletConfig对象不能被另一个servlet访问。
+
+## 子类引用父类的静态字段
+
+子类引用父类的静态字段，只会触发子类的加载、父类的初始化、不会导致子类初始化。而静态代码块在类初始化的时候执行。
