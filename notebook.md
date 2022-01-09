@@ -445,3 +445,284 @@ java堆，方法区
 ## String与StringBuffer
 
 String和StringBuffer这两个类都被final修饰，说的是不可以被继承final修饰的对象或者引用类型，地址值不变，对象属性可变，其次。
+
+# 2022.1.5
+
+## java的堆内存
+
+简单来说java的堆内存分为两块：permantspace(持久带)和heapspace.
+
+持久带中主要存放用于存放静态类型数据，如Java Class，Method等，与垃圾收集器要收集的java对象关系不大。
+
+而headspace分为年轻带和老年带
+
+年轻代的垃圾回收叫Young GC（ps：对象被创建时，内存的分配首先发生在年轻代（大对象可以直接被创建在年老代），大部分的对象在创建后很快就不再使用，因此很快变得不可达，于是被年轻代的GC机制清理掉（IBM的研究表明，98%的对象都是很快消亡的），这个GC机制被称为Minor GC或叫Young GC。注意，Minor GC并不代表年轻代内存不足，它事实上只表示在Eden区上的GC），
+
+年老代的垃圾回收叫Full GC（ps：对象如果在年轻代存活了足够长的时间而没有被清理掉（即在几次Young GC后存活了下来），则会被复制到年老代，年老代的空间一般比年轻代大，能存放更多的对象，在年老代上发生的GC次数也比年轻代少。当年老代内存不足时，将执行Major GC，也叫 Full GC。）
+
+在年轻代中经历了N次（可配置）垃圾回收后仍然存活的对象，就会被复制到年老代中，因此可以以为年老带中存放的都是一些生命周期较长的对象。
+
+年老代溢出原因有循环上万次的字符串处理、创建上千万个对象，在一端代码内申请上百M甚至上G的内存
+
+持久带溢出原因动态加载了大量java类而导致溢出
+
+## 抽象方法的访问权限
+
+以前抽象类或者抽象方法默认是protected，jdk1.8以后改成默认default。
+
+## 访问权限
+
+局部内部类前不能用修饰符public和private，protected
+
+内部类随意。
+
+# 2022.1.6
+
+## 二分法
+
+### 模板一
+
+用于查找数组中的单个索引来确定的元素或条件。
+
+**关键属性**
+
+- 二分查找的最基础和最基本的形式。
+- 查找条件可以在不与元素的两侧进行比较的情况下确定（或使用它周围的特定元素）
+- 不需要后处理，因为每一步中，你都在检查是否找到了元素。如果达到末尾，则知道未找到该元素。
+
+**区分语法**
+
+- 初始条件：left = 0，right=length-1；
+- 终止： left > right;
+- 向左查找：right = mid-1;
+- 向右查找  left=mid+1;
+
+```java
+int binarySearch(int[] nums,int target){
+    if(nums==nullnums.length==0){
+        return -1;
+    }
+    int left=0,right=nums.length-1;
+    while(left<=right){
+        int mid = left+(right-left)/2;
+        if(num[mid]==target){
+            return mid;
+        }else if(num[mid]<target){
+            left = mid+1;
+        }else if(num[mid]>target){
+            right = mid-1;
+        }
+    }
+    return -1;
+}
+```
+
+### 模板二
+
+用于查找需要访问数组中当前索引及其直接右邻居索引的元素或条件，
+
+**关键属性**
+
+- 一种实现二分查找的高级方法。
+- 查找条件需要访问元素的直接右邻居。
+- 使用元素的右邻居老确定是否满足条件，并决定是向左还是向右。
+- 保证查找空间在每一步中至少有2个元素。
+- 需要进行后处理。当你剩下1个元素时，循环/递归结束。需要评估剩余元素是否符合条件。
+
+**区分语法**
+
+- 初始条件：left = 0, right =length
+- 终止：left == right
+- 向左查找； right = mid；
+- 向右查找：left = mid+1;
+
+```java
+int binarySeach(int nums,int target){
+    if(nums==null||nums.length==0){
+        return -1;
+    }
+    int left =0,right=nums.length;
+    while(left<right){
+        int mid = left+(right-left)/2;
+        if(nums[mid]==target){
+            return mid;
+        }else if(nums[mid]<target){
+            left = mid+1;
+        }else {
+            right = mid;
+        }
+    }
+    if(left!=nums.length&&nums[left]==target)
+        return left;
+    return -1;
+}
+```
+
+### 模板三
+
+​	用于搜索需要访问当前索引及其在数组中的直接左右邻居索引的元素或条件。
+
+**关键属性**
+
+- 实现二分查找的另一种方法。
+
+- 搜索条件需要访问元素的直接左右邻居。
+- 使用元素的邻居来确定它是向右还是向左。
+- 保证查找空间在每个步骤中至少有 3 个元素。
+- 需要进行后处理。 当剩下 2 个元素时，循环 / 递归结束。 需要评估其余元素是否符合条件。
+
+**区分语法**
+
+- 初始条件：left = 0, right = length-1
+
+- 终止：left + 1 == right
+- 向左查找：right = mid
+- 向右查找：left = mid
+
+```java
+int binarySearch(int[] nums, int target) {
+    if (nums == null || nums.length == 0)
+        return -1;
+
+    int left = 0, right = nums.length - 1;
+    while (left + 1 < right){
+        // Prevent (left + right) overflow
+        int mid = left + (right - left) / 2;
+        if (nums[mid] == target) {
+            return mid;
+        } else if (nums[mid] < target) {
+            left = mid;
+        } else {
+            right = mid;
+        }
+    }
+
+    // Post-processing:
+    // End Condition: left + 1 == right
+    if(nums[left] == target) return left;
+    if(nums[right] == target) return right;
+    return -1;
+}
+```
+
+
+
+# 2022.1.7
+
+## 线程通知和唤醒
+
+wait()、notify()和notifyAll()是Object类中的方法；Condition是在java1.5中才出现的，它用来替代传统的Object的wait(),notify()实现线程间的协作，相比使用Object的wait()、notify(),使用Condition的await()、signal()这种方式实现线程间协作更加安全和高效；
+
+## java编译和运行命令
+
+编译java文件->使用javac 文件名.java
+
+执行使用 ->java 文件名
+
+## java内存区域
+
+### 程序计数器
+
+程序计数器是一块较小的内存空间，它的作用可以看做是当前线程所执行的字节码的信号指示器（偏移地址）。java编译过程中产生的字节码有点类似编译原理的指令，程序计数器（程序计数器的内存空间是线程私有的），因为当执行语句时，改变的是程序计数器的内存空间，因此它不会发送内存溢出，并且程序计数器是jvm虚拟机规范中唯一个没有规定OutOfMemoryError异常的区域；
+
+### Java虚拟机栈
+
+线程私有。生命周期和线程一致。描述的是Java方法执行的内存模型；每个方法在执行时都会创建一个栈帧（Stack Frame）用于存储局部变量表、操作数栈，动态链接，方法出口等信息。每一个方法从调用直至执行结束，就对应着一个栈帧从虚拟机栈中入栈到出栈的过程。没有类信息，类信息是在方法区中。
+
+### JAVA堆
+
+对于绝大数应用来说，这块区域是JVM所管理的内存中最大的一块。线程共享，主要是存放对象实例和数组
+
+### 方法区
+
+属于共享内存区域，存储已被虚拟机加载的类的信息，常量、静态变量、即时编译器编译后的代码等数据
+
+# 2022.1.8
+
+## 识别合法的构造方法
+
+1. 构造方法可以被重载，一个构造方法可以通过this关键字调用另一个构造方法，this语句必须位于构造方的第一行；
+2. 当一个类中没有定义任何构造方法，java将自动提供一个缺省构造方法。
+3. 子类通过super关键字调用父类的一个构造方法。
+4. 当子类的某个构造方法没有通过super关键字调用父类的构造方法，通过这个构造方法创建子类对象时，会自动先调用父类的缺省构造方法。
+5. 构造方法不能被static，final、synchronized、abstract、native修饰，但是可以被public、private、protected修饰；
+6. 构造方不是类的成员方法。
+7. 构造方法不能被继承
+
+## 执行顺序
+
+静态代码块>main() >构造代码块>构造方法
+
+## Final关键字
+
+1. final修饰变量，则等同于常量
+2. final修饰方法中的参数，称为最终参数，
+3. final修饰类，则类不能被继承
+4. final修饰方法，则方法不能被重写，可以重载
+5. 不能修饰抽象类
+
+# 2022.1.9
+
+## 值传递与引用传递
+
+**值传递**：是指在调用函数时，将实际参数复制一份传递给函数，这样在函数中修改参数时，不会影响到实际参数。其实，就是在说值传递时，只会改变形参，不会改变实参。
+
+**引用传递**：是指在调用函数时，将实际参数的地址传递给函数，这样在函数中对参数的修改，将影响到实际参数
+
+1）形参为基本类型时，对形参的处理不会影响实参。   
+
+ 2）形参为引用类型时，对形参的处理会影响实参。    
+
+3）String,Integer,Double等immutable类型的特殊处理，可以理解为值传递，形参操作不会影响实参对象。
+
+## 基本类型的默认值和取值范围
+
+|         | 默认值   | 存储需求（字节） | 取值范围       | 示例            |
+| ------- | -------- | ---------------- | -------------- | --------------- |
+| byte    | 0        | 1                | -2^7^~2^7^-1   |                 |
+| char    | '\u0000' | 2                | 0~2^16^-1      |                 |
+| short   | 0        | 2                | -2^15^~2^15^-1 |                 |
+| int     | 0        | 4                | -2^31^~2^31^-1 |                 |
+| long    | 0        | 8                | -2^63~^2^63^-1 | long o=10L;;    |
+| float   | 0.0f     | 4                | -2^31^~2^31^-1 | float f =10.0F; |
+| double  | 0.0d     | 8                | -2^63^-2^63^-1 | double b =10.0; |
+| boolean | false    | 1                | false/true     |                 |
+
+## Servlet
+
+servlet是线程不安全的，在Servlet类中可能会定义共享的类变量，这样在并发的多线程访问的情况下，不同的线程对成员变量的修改会引发错误。
+
+**init方法**： 是在servlet实例创建时调用的方法，用于创建或打开任何与servlet相的资源和初始 化servlet的状态，Servlet规范保证调用init方法前不会处理任何请求  
+   **service方法**：是servlet真正处理客户端传过来的请求的方法，由web容器调用，
+  根据HTTP请求方法（GET、POST等），将请求分发到doGet、doPost等方法  
+  **destory方法**：是在servlet实例被销毁时由web容器调用。Servlet规范确保在destroy方法调用之前所有请求的处理均完成，需要覆盖destroy方法的情况：释放任何在init方法中 打开的与servlet相关的资源存储servlet的状态
+
+## 四类八种基本类型
+
+### 1、整数类型
+
+byte short int long
+
+### 2、浮点型
+
+float double
+
+### 3、逻辑型
+
+boolean
+
+### 4、字符型
+
+char
+
+## 类的加载过程
+
+1.  JVM会先去方法区中找有没有相应类的.class存在。如果有，就直接使用；如果没有，则把相关类的.class加载到方法区 
+2. 在.class加载到方法区时，会分为两部分加载：先加载非静态内容，再加载静态内容 
+3.  加载非静态内容：把.class中的所有非静态内容加载到方法区下的非静态区域内 
+4.  加载静态内容： 
+     4.1、把.class中的所有静态内容加载到方法区下的静态区域内 
+     4.2、静态内容加载完成之后，对所有的静态变量进行默认初始化 
+     4.3、所有的静态变量默认初始化完成之后，再进行显式初始化 
+     4.4、当静态区域下的所有静态变量显式初始化完后，执行静态代码块 
+5.  当静态区域下的静态代码块，执行完之后，整个类的加载就完成了。
