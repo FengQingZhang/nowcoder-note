@@ -1242,3 +1242,640 @@ finalize() //当垃圾回收器确定不存在对该对象的更多引用时，�
 
 ![](img/OSI参考模型.png)
 
+# 2022.1.19
+
+## hashcode和equals约定关系如下
+
+1. 如果两个对象相等，那么他们一定有相同的哈希值
+2. 如果两个对象的哈希值相等，那么这两个对象有可能相等也有可能不相等，
+
+## 加载驱动的方法
+
+```java
+Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+DriverManager.registerDriver(new com.mysql.jdbc.Driver());
+System.setProperty("jdbc.drivers", "com.mysql.jdbc.Driver");
+```
+
+## Java中的char
+
+java中的char是Unicode编码，Unicode编码占两个字节，就是16位，足够存储一个汉字。
+
+## Properties实现了Map接口，是线程安全的
+
+## Java关键字
+
+​	true、false、null都不是关键字。
+
+​	goto、const 是保留的关键字。
+
+```apl
+abstract                continue           for            new        
+switch                  default            if             package     
+synchronized            do                 goto           private     
+this                    break              double         implements   
+protected               throw              byte           else       
+import                  public             throws         case       
+enum                    instanceof         return         transient  
+catch                   extends            int            short       
+try                     char               final          interface    
+static                  void               class          finally   
+long                    strictfp           volatile       const      
+float                   native             super          while
+boolean                 assert 
+```
+
+## 变量的引用
+
+常量池：未经 new 的常量
+
+堆区：成员变量的引用，new 出来的变量
+
+栈区：局部变量的引用
+
+成员变量的引用在堆区，是因为成员变量的所属对象在堆区，所以它也在堆区。
+
+局部变量的引用在栈区，是因为局部变量不属于某一个对象，在被调用时才被加载，所以在栈区。
+
+## String，StringBuffer，StringBuilder的区别
+
+### 可变与不可变
+
+​	String 类中使用字符数组保存字符串，如下就是，因为有final修饰符，所以可以知道String对象是不可变的。String为不可变对象，一旦被创建，就不能修改它的值，对于已经存在可的String对象的修改都是重新创建一个新的对象，然后把新的值保存进去。
+
+```
+ private final char value[];
+```
+
+​	StringBuilder与StringBuffer都继承自AbstractStringBuilder类，在AbstractStringBuilder中也是使用字符数组保存字符串，如下就是，可知这两种对象都是可变的。
+
+```java
+char[] value
+```
+
+StringBuffer是一个可变对象，当对他进行修改的时候不会像String那样重新建立对象，它只能通过构造函数来建立。如：StringBuffer sb = new StringBuffer();不能通过赋值符号对他进行赋值。对象被建立以后,在内存中就会分配内存空间,并初始保存一个null.向StringBuffer中赋值的时候可以通过它的append方法.sb.append("hello");
+
+### 线程安全
+
+​	String中的对象是不可变的，也就可以理解为常量，显然线程安全。
+
+​	AbstractStringBuilder是StringBuilder与StringBuffer的公共父类，定义了一些字符串的基本操作，如expandCapacity、append、insert、indexOf等公共方法。
+
+​	**StringBuffer对方法加了同步锁或者对调用的方法加了同步锁，所以是** **线程安全的** **。看如下源码：**
+
+```java
+public synchronized StringBuffer reverse() {
+	 super.reverse();
+     return this ;
+}
+
+public int indexOf(String str) {
+    return indexOf(str, 0);//存在 public synchronized int indexOf(String str, int fromIndex) 方法
+}
+```
+
+**StringBuilder并没有对方法进行加同步锁，所以是** **非线程安全的** **。**
+
+**StringBuilder与StringBuffer共同点**
+
+**StringBuilder与StringBuffer有公共父类AbstractStringBuilder(** **抽象类** **)。**
+
+**抽象类与接口的其中一个区别是：抽象类中可以定义一些子类的公共方法，子类只需要增加新的功能，不需要重复写已经存在的方法；而接口中只是对方法的申明和常量的定义。**
+
+**StringBuilder、StringBuffer的方法都会调用AbstractStringBuilder中的公共方法，如super.append(...)。只是StringBuffer会在方法上加synchronized关键字，进行同步。**
+
+### 效率
+
+最后，如果程序不是多线程的，那么使用StringBuilder效率高于StringBuffer。 
+
+效率比较String < StringBuffer < StringBuilder，但是在String S1 =“This is only a”+“simple”+“test”时，String效率最高
+
+# 2022.1.20
+
+## Vector&ArrayList的主要区别
+
+1. 同步性Vector是线程安全的，也就是说是同步的，而ArrayList是线程不安全的，不是同步的
+
+2. 数据增长：当需要增长时，Vector默认增长为原来一倍，而ArrayList却是原来的50%，这样ArrayList就有利于节约内存空间。
+
+   如果涉及到堆栈、队列等操作，应该考虑用Vector，如果需要快速随机访问元素，应该使用ArrayList
+
+## HashMap
+
+1. HashMap实际上是一个“链表散列”的数据结构，即数组和链表的结合体，HashMap的底层结构是一个数组，数组中的每一项是一条链表。
+2. HashMap的实例有俩个参数影响其性能：‘初始容量’和‘装填因子’
+3. HashMap实现不同步，线程不安全。HashTable线程安全
+4. HashMap中的key-value都是存储在Entry中的。
+5. HashMap可以存null键和null值，不保证元素的顺序恒久不变，它的底层使用时数组和链表，通过hashCode()方法和equals方法保证键的唯一性，
+6. 。HashMap是采用拉链法解决哈希冲突的。
+
+## 解决冲突的方法
+
+### 分类
+
+​	解决冲突主要有三种方法：定址法，拉链法，再散列法
+
+### 链表法
+
+​	链表法是将相同hash值的对象组成一个链表放在hash值对应的槽位
+
+### 定址法
+
+​	当冲突发生时，使用某种探查技术在散列表中形成一个探查序列。沿此序列逐个单元地查找，直到找到给定的关键字，或者碰到一个开发的地址（即该地址单元为空）为止（若要插入，在探查到开放的地址，则可将待插入的新结点存入该地址单元）。
+
+### 拉链法
+
+​	拉链法解决冲突的做法是：将所有关键字为同义词的结点链接到在同一个单链表中。若选定的散列表长度为m，则可将散列定义为一个由m个头指针组成的指针数组T[0..m-1]。凡是散列地址为i的结点，均插入到以T[i]为头指针的单链表中。T中各分量的初值均应为空指针。在拉链法中，装填因子在拉链法中，装填因子α可以大于1，但一般均取α≤1。拉链法适合未规定元素的大小
+
+## Hashtable和HashMap的区别
+
+​	a)  继承不同。  public class Hashtable extends Dictionary implements Map public class HashMap extends  AbstractMap implements Map
+
+​	 b) Hashtable中的方法是同步的，而HashMap中的方法在缺省情况下是非同步的。在多线程并发的环境下，可以直接使用Hashtable，但是要使用HashMap的话就要自己增加同步处理了。
+
+ 	c) Hashtable 中， key 和 value 都不允许出现 null 值。 在 HashMap 中， null 可以作为键，这样的键只有一个；可以有一个或多个键所对应的值为 null 。当 get() 方法返回 null 值时，即可以表示 HashMap 中没有该键，也可以表示该键所对应的值为 null 。因此，在 HashMap 中不能由 get() 方法来判断 HashMap 中是否存在某个键， 而应该用 containsKey() 方法来判断。 
+
+​	d) 两个遍历方式的内部实现上不同。Hashtable、HashMap都使用了Iterator。而由于历史原因，Hashtable还使用了Enumeration的方式 。
+
+ 	e) 哈希值的使用不同，HashTable直接使用对象的hashCode。而HashMap重新计算hash值。
+
+​	 f) Hashtable和HashMap它们两个内部实现方式的数组的初始大小和扩容的方式。HashTable中hash数组默认大小是11，增加的方式是old*2+1。HashMap中hash数组的默认大小是16，而且一定是2的指数。  注：  HashSet子类依靠hashCode()和equal()方法来区分重复元素。    HashSet内部使用Map保存数据，即将HashSet的数据作为Map的key值保存，这也是HashSet中元素不能重复的原因。而Map中保存key值的,会去判断当前Map中是否含有该Key对象，内部是先通过key的hashCode,确定有相同的hashCode之后，再通过equals方法判断是否相同。
+
+## 创建子类的对象时，会先执行父类的构造函数。
+
+## 子类构造器
+
+​	子类构造器的默认第一行就是super()，默认调用直接父类的无参构造。这也就是一旦一个子类的直接父类没有无参的构造的情况下，必须在自己构造器的第一行显式的指明调用父类或者自己的哪一个构造器
+
+## Ant和Maven
+
+​	Ant和Maven都是基于Java的构建（build）工具。
+
+### Ant特点
+
+- 没有一个约定的目录结构，
+- 必须明确让ant做什么，什么时候做，然后编译，打包
+- 没有生命周期，必须定义目标及其实现的任务序列
+- 没有集成依赖管理
+
+### Maven特点
+
+- 拥有约定，知道你的代码在哪里。放到哪里去
+- 拥有一个生命周期，例如执行 mvn install 就可以自动执行编译，测试，打包等构建过程
+- 只需要定义一个pom.xml,然后把源码放到默认的目录，Maven帮你处理其他事情
+- 拥有依赖管理，仓库管理
+
+## 抽象类
+
+- 抽象类可以有构造方法，接口没有构造方法
+- 抽象类可以有普通成员变量，接口没有普通成员变量
+- 抽象类和接口都可有静态成员变量，抽象类中静态成员变量访问类型任意，接口只能public static final（默认）
+- 抽象类可以没有抽象方法，抽象类可以有普通方法，接口中都是抽象方法。
+- 抽象类可以有静态方法，接口不能有静态方法
+- 抽象类中的方法可以是public，protected；接口方法只有public。
+
+## HttpServletResponse设置响应头的数据
+
+```java
+public void setDateHeader(String name,long date);
+public void addDateHeader(String name,long date);
+public void setHeader(String name,String value);
+public void addHeader(String name,String value);
+public void setIntHeader(String name,int value);
+public void addIntHeader(String name,int value);
+```
+
+## 值传递和引用传递
+
+- **值传递**是将变量的一个副本传递到方法中，方法中如何操作该变量副本，都不会改变原变量的值。
+- **引用传递**是将变量的内存地址传递给方法，方法操作变量时会找到保存在该地址的变量，对其进行操作。会对原变量造成影响。
+
+# 2022.1.21
+
+## 四大修饰符
+
+### \- private(私有的) 
+
+​	private可以修饰成员变量，成员方法，构造方法，不能修饰类(此刻指的是外部类，内部类不加以考虑)。被private修饰的成员只能在其修饰的本类中访问，在其他类中不能调用，但是被private修饰的成员可以通过set和get方法向外界提供访问方式 
+
+### \- default(默认的) 
+
+​	defalut即不写任何关键字，它可以修饰类，成员变量，成员方法，构造方法。被默认权限修饰后，其只能被本类以及同包下的其他类访问。 
+
+### \- protected(受保护的) 
+
+​	protected可以修饰成员变量，成员方法，构造方法，但不能修饰类(此处指的是外部类，内部类不加以考虑)。被protected修饰后，只能被同包下的其他类访问。如果不同包下的类要访问被protected修饰的成员，这个类必须是其子类。 
+
+### \- public(公共的) 
+
+​	public是权限最大的修饰符，他可以修饰类，成员变量，成员方法，构造方法。被public修饰后，可以再任何一个类中，不管同不同包，任意使用。 
+
+|          | public | protected | default | private |
+| -------- | ------ | --------- | ------- | ------- |
+| 同一个类 | √      | √         | √       | √       |
+| 同一个包 | √      | √         | √       |         |
+| 子类     | √      | √         |         |         |
+| 不同包   | √      |           |         |         |
+
+
+
+## 枚举（enum）
+
+​	枚举（enum）类型是java 5新增的特性，它是一种新的类型，允许用常量来表示特定的数据片断，而且全部都以类型安全的形式来表示，是特殊的类，可以拥有成员变量和方法。
+
+## hashMap，hashTable，concurrentHashMap
+
+​	hashMap在单线程中使用大大提高效率，在多线程的情况下使用hashTable来确保安全。hashTable中使用synchronized关键字来实现安全机制，但是synchronized是对整张hash表进行锁定即让线程独享整张hash表，在安全同时造成了浪费。concurrentHashMap采用分段加锁的机制来确保安全。（jdk1.8后。concurrentHashMap取消了segment分段锁，采用cas和synchronized来保证并发安全）
+
+
+
+## java异常处理
+
+#### throw用于抛出异常
+
+#### throws 关键字可以在方法上声明该方法要抛出的异常、然后在方法内部通过throw抛出异常对象。
+
+#### try是用于检测被包住的语句块是否出现异常，如果有异常，则抛出异常，并执行catch语句。
+
+#### cacth用于捕获从try中抛出的异常并作出处理。
+
+#### finally语句块是不管有没有出现异常都要执行的内容。
+
+## 单例模式
+
+### 定义
+
+​	确保一个类只有一个实例，并提供该实例的全局访问点。这样做的好处是：有些实例，全局只需要一个就够了，使用单例模式就可以避免一个全局使用的类，频繁的创建与销毁，耗费系统资源。
+
+## 设计要素
+
+- 一个私有构造函数（确保只能单例类自己创建实例）
+- 一个私有静态变量（确保只有一个实例）
+- 一个公有静态函数（给使用者提供调用方法）
+
+简单来说就是，单例类的构造方不让其他人修改和使用；并且单例类自己只创建一个实例，这个实例，其他人也无法修改和直接使用；然后单例类提供一个调用方法，想用这个实例，只能调用。这样就确保了全局只创建了一个实例。
+
+### 单例模型6种实现及各实现的优缺点
+
+#### 一、懒汉式（线程不安全）
+
+实现
+
+```java
+public class Singleton {
+    private static Singleton uniqueInstance;
+    private Singleton() {}
+    public static Singleton getUniqueInstance() {
+        if (uniqueInstance == null) {
+            uniqueInstance = new Singleton();
+        }
+        return uniqueInstance;
+    }
+}
+```
+
+**说明**：先不创建实例，当第一次被调用时，在创建实例，所以被称为懒汉式。
+
+**优点**：延迟了实例化，如果不需要使用该类，就不会被实例化，节约了系统资源。
+
+**缺点**：线程不安全，多线程环境下，如果多个线程同时进入了 if (uniqueInstance == null) ，若此时还未实例化，也就是uniqueInstance == null，那么就会有多个线程执行 uniqueInstance = new Singleton(); ，就会实例化多个实例；
+
+#### 二、饿汉式（线程安全）
+
+实现：
+
+```java
+public class Singleton{
+	private static Singleton uniqueInstance = new Singleton();
+	private Singleton(){
+	}
+	public static Singleton getUniqueInstance(){
+		return uniqueInstance;
+	}
+}
+```
+
+**说明**：先不管需不需要使用这个实例，直接先实例化好实例（饿死鬼一样，所以称为饿汉式），然后当需要使用的时候，直接调方法就可以使用了
+
+**优点**：提起实例化好了一个实例，避免了线程不安全问题的出现，
+
+**缺点**：直接实例化了实例，不再延迟实例化；若系统没有使用这个实例，或者系统运行很久之后才需要使用这个实例，都会使操作系统的资源浪费。
+
+#### （三）懒汉式（线程安全）
+
+**实现：**
+
+```java
+public class Singleton {
+    private static Singleton uniqueInstance;
+
+    private static singleton() {
+    }
+
+    private static synchronized Singleton getUinqueInstance() {
+        if (uniqueInstance == null) {
+            uniqueInstance = new Singleton();
+        }
+        return uniqueInstance;
+    }
+
+}
+```
+
+**说明：** 实现和 线程不安全的懒汉式 几乎一样，唯一不同的点是，在get方法上 加了一把 锁。如此一来，多个线程访问，每次只有拿到锁的的线程能够进入该方法，避免了多线程不安全问题的出现。
+
+**优点：** 延迟实例化，节约了资源，并且是线程安全的。
+
+**缺点：** 虽然解决了线程安全问题，但是性能降低了。因为，即使实例已经实例化了，既后续不会再出现线程安全问题了，但是锁还在，每次还是只能拿到锁的线程进入该方***使线程阻塞，等待时间过长。
+
+#### （四）双重检查锁实现（线程安全）
+
+**实现：**
+
+```java
+public class Singleton {
+
+    private volatile static Singleton uniqueInstance;
+
+    private Singleton() {
+    }
+
+    public static Singleton getUniqueInstance() {
+        if (uniqueInstance == null) {
+            synchronized (Singleton.class) {
+                if (uniqueInstance == null) {
+                    uniqueInstance = new Singleton();
+                }
+            }
+        }
+        return uniqueInstance;
+    }  
+}
+```
+
+**说明:** 双重检查数相当于是改进了 线程安全的懒汉式。线程安全的懒汉式 的缺点是性能降低了，造成的原因是因为即使实例已经实例化，依然每次都会有锁。而现在，我们将锁的位置变了，并且多加了一个检查。 也就是，先判断实例是否已经存在，若已经存在了，则不会执行判断方法内的有锁方法了。 而如果，还没有实例化的时候，多个线程进去了，也没有事，因为里面的方法有锁，只会让一个线程进入最内层方法并实例化实例。如此一来，最多最多，也就是第一次实例化的时候，会有线程阻塞的情况，后续便不会再有线程阻塞的问题。
+
+**为什么使用 volatile 关键字修饰了 uniqueInstance 实例变量 ？**
+
+uniqueInstance = new Singleton(); 这段代码执行时分为三步：
+
+1. 为 uniqueInstance 分配内存空间
+2. 初始化 uniqueInstance
+3. 将 uniqueInstance 指向分配的内存地址
+
+正常的执行顺序当然是 1>2>3 ，但是由于 JVM 具有指令重排的特性，执行顺序有可能变成 1>3>2。
+单线程环境时，指令重排并没有什么问题；多线程环境时，会导致有些线程可能会获取到还没初始化的实例。
+例如：线程A 只执行了 1 和 3 ，此时线程B来调用 getUniqueInstance()，发现 uniqueInstance 不为空，便获取 uniqueInstance 实例，但是其实此时的 uniqueInstance 还没有初始化。
+
+解决办法就是加一个 volatile 关键字修饰 uniqueInstance ，volatile 会禁止 JVM 的指令重排，就可以保证多线程环境下的安全运行。
+
+**优点：** 延迟实例化，节约了资源；线程安全；并且相对于 线程安全的懒汉式，性能提高了。
+
+**缺点：** volatile 关键字，对性能也有一些影响。
+
+#### （五）静态内部类实现（线程安全）
+
+**实现：**
+
+```java
+public class Singleton {
+
+    private Singleton() {
+    }
+
+    private static class SingletonHolder {
+        private static final Singleton INSTANCE = new Singleton();
+    }
+
+    public static Singleton getUniqueInstance() {
+        return SingletonHolder.INSTANCE;
+    }
+
+}
+```
+
+**说明：** 首先，当外部类 Singleton 被加载时，静态内部类 SingletonHolder 并没有被加载进内存。当调用 getUniqueInstance() 方法时，会运行 return SingletonHolder.INSTANCE; ，触发了 SingletonHolder.INSTANCE ，此时静态内部类 SingletonHolder 才会被加载进内存，并且初始化 INSTANCE 实例，而且 JVM 会确保 INSTANCE 只被实例化一次。
+
+**优点：** 延迟实例化，节约了资源；且线程安全；性能也提高了。
+
+#### （六）枚举类实现（线程安全）
+
+**实现：**
+
+```java
+public enum Singleton {
+
+    INSTANCE;
+
+    //添加自己需要的操作
+    public void doSomeThing() {
+
+    }
+
+}
+```
+
+**说明：** 默认枚举实例的创建就是线程安全的，且在任何情况下都是单例。
+
+**优点：** 写法简单，线程安全，天然防止反射和反序列化调用。
+
+- **防止反序列化**
+  **序列化：**把java对象转换为字节序列的过程；
+  **反序列化：** 通过这些字节序列在内存中新建java对象的过程；
+  **说明：** 反序列化 将一个单例实例对象写到磁盘再读回来，从而获得了一个新的实例。
+  我们要防止反序列化，避免得到多个实例。
+  **枚举类天然防止反序列化。**
+  其他单例模式 可以通过 重写 readResolve() 方法，从而防止反序列化，使实例唯一重写 readResolve() :
+
+```
+private` `Object readResolve() ``throws` `ObjectStreamException{``    ``return` `singleton;``}
+```
+
+#### 四、单例模式的应用场景
+
+**应用场景举例：**
+
+- 网站计数器。
+- 应用程序的日志应用。
+- Web项目中的配置对象的读取。
+- 数据库连接池。
+- 多线程池。
+- ......
+
+**使用场景总结：**
+
+- **频繁实例化然后又销毁的对象**，使用单例模式可以提高性能。
+- **经常使用的对象，但实例化时耗费时间或者资源多**，如数据库连接池，使用单例模式，可以提高性能，降低资源损坏。
+- **使用线程池之类的控制资源时**，使用单例模式，可以方便资源之间的通信。
+
+# 2022.1.22
+
+## statement与PreparedStatement
+
+statement每次执行SQL语句，数据库都要执行SQL语句的编译，最好用于仅一次查询并返回结果的情形，效率高于PreparedStatement
+
+PrepareStatement是预编译的，使用PreparedStatement有几个好处
+
+- 安全性好，有效防止Sql注入等问题
+- 对于多次重复执行的语句，使用PreparedStatment效率会更高一点，并且在这种情况下也比较适合使用batch
+- 代码的可读性和可维护性。
+
+CallableStatement接口扩展PrepareStatement，用来调用存储过程,它提供了对输出和输入/输出参数的支持。CallableStatement 接口还具有对 PreparedStatement 接口提供的输入参数的支持。垃圾回收在jvm中优先级相当相当低。
+
+
+
+## 垃圾收集器（GC）程序开发者只能推荐JVM进行回收，但何时回收，回收哪些，程序员不能控制。
+
+## 进入DEAD的线程，它还可以恢复，GC不会回收
+
+## 垃圾回收在jvm中优先级相当相当低
+
+
+
+## ThreadLocal
+
+ThreadLocal用于线程之间的数据隔离，ThreadLocal类创建一个线程本地变量。在Thread中有一个成员变量ThreadLocals，该变量的类型是ThreadLocalMap，也就是一个Map。它的键是ThreadLocal，值为就是变量的副本。通过ThreadLocal的get()方法可以获取该线程变量的本地副本，在get方法之前要先set，否则就要重写initalValue()方法。
+
+对于多线程资源共享的问题，同步机制采用了“以时间换空间”的方式，而ThreadLocal采用了“以空间换时间”的方式。前者仅提供一份变量，让不同的线程排队访问，而后者为每一个线程都提供了一份变量，因此可以同时访问而互不影响
+
+## ThreadLocal的使用场景
+
+​    数据库连接：在多线程中，如果使用懒汉式的单例模式创建Connection对象，由于该对象是共享的，那么必须要使用同步方法保证线程安全，这样当一个线程在连接数据库时，那么另外一个线程只能等待。这样就造成性能降低。如果改为哪里要连接数据库就来进行连接，那么就会频繁的对数据库进行连接，性能还是不高。这时使用ThreadLocal就可以既可以保证线程安全又可以让性能不会太低。但是ThreadLocal的缺点时占用了较多的空间。
+
+
+
+## AOP 和 OOP的区别：
+
+1. **面向方面编程** **AOP** 偏重业务处理过程的某个步骤或阶段，强调降低模块之间的耦合度，使代码拥有更好的移植性。
+
+2. **面向对象编程** **(oop)** 则是对业务分析中抽取的实体进行方法和属性的封装。
+
+**也可以说** **AOP** **是面向业务中的动词领域，** **OOP** **面向名词领域。**
+
+# 2022.1.23
+
+![](img/内部类.png)
+
+## jvm参数
+
+-Xmx10240m：代表最大堆
+
+ -Xms10240m：代表最小堆
+
+ -Xmn5120m：代表新生代
+
+ -XXSurvivorRatio=3：代表Eden:Survivor = 3  根据Generation-Collection算法(目前大部分JVM采用的算法)，一般根据对象的生存周期将堆内存分为若干不同的区域，一般情况将新生代分为Eden ，两块Survivor；   计算Survivor大小， Eden:Survivor = 3，总大小为5120,3x+x+x=5120  x=1024
+
+新生代大部分要回收，采用Copying算法，快！
+
+老年代 大部分不需要回收，采用Mark-Compact算法
+
+# 2022.1.24
+
+**如果类没有构造发方法，JVM会生成一个默认构造方法，如果定义了任意类型的构造方法，编译器都不会自动生成构造方法**
+
+****
+
+**~n=-n-1** 
+
+
+
+## Mysql组合索引（复合索引）最左优先原则
+
+​	最左优先就是说组合索引的第一个字段必须出现在查询组句中，这个索引才会被用到。只要组合索引最左边第一个出现在where中，那么不管后面的字段出现与否或者出现顺序如何，Mysql引擎都会自动调用索引来优化查询效率。
+
+
+
+## 正则表达式的规则
+
+1. 任意一个字符表示匹配任意对应的字符，如a匹配a，7匹配7，-匹配-。
+2. []代表匹配中括号中其中任一字符，如[abc]匹配a或b或c。
+3. -在中括号里面和外面代表含义不同，如在外时，就匹配-，如果在中括号内[a-b]表示匹配26个小写字母中的任一个；[a-zA-Z]匹配大小写共52个字母中任一个；[0-9]匹配十个数字中任一个。
+4. ^在中括号里面和外面含义不同，如在外时，就表示开头，如 ^7[0-9]表示匹配开头是7的，且第二位是任一数字的字符串；如果在中括号里面，表示除了这个字符意外的任意字符（包括数字，特殊字符），如[ ^abc]表示匹配出去abc之外的其他任一字符，
+5. .表示匹配任意的字符。
+6. \d表示数字
+7. \D表示非数字
+8. \s表示由空字符组成，[ \t\n\r\x\f]。
+9. \S表示由非空字符组成，[ ^ \s]。
+10. \w表示字母、数字、下划线，[a-zA-Z0-9_]。
+11.  \W表示不是由字母、数字、下划线组成。
+12. ?: 表示出现0次或1次。
+13. +表示出现1次或多次。
+14.  *表示出现0次、1次或多次。
+15.  {n}表示出现n次。
+16. {n,m}表示出现n~m次。
+17.  {n,}表示出现n次或n次以上。
+18.  XY表示X后面跟着Y，这里X和Y分别是正则表达式的一部分。
+19.  X|Y表示X或Y，比如"food|f"匹配的是foo（d或f），而"(food)|f"匹配的是food或f。
+20.  (X)子表达式，将X看做是一个整体
+
+
+
+![](img/Servlet生命周期.png)
+
+## 方法重载
+
+- 方法名相同	
+- 方法的参数类型，参数个数不一样
+- 方法的返回类型可以不相同
+- 方法的修饰符可以不相同。
+
+
+
+## 类加载过程
+
+### 概述
+
+​	类从被加载到虚拟机内存中开始，到卸载出内存为止，它的整个生命周期包括：加载（Loading）、验证（Verification）
+
+，准备（Preparation） 、解析（Resolution）、初始化（Initialzation）、使用（Using）和卸载（Unloading ）7个阶段。
+
+其中准备、验证、解析3个部分统称为连接（Linking）。如图所示。
+
+​	![](img/生命周期.png)
+
+加载、验证、准备、初始化和卸载这5个阶段的顺序是确定的，类的加载过程必须按照这种顺序按部就班地开始，而解析阶段则不一定；它在某些情况下可以在初始化阶段之后再开始，这是为了支持Java语言的运行时绑定（也称为动态绑定或晚期绑定）。
+
+### 加载
+
+​	在加载阶段（可以参考java.lang.ClassLoader的localClass() 方法），虚拟机需要完成以下3件事件
+
+1. 通过一个类的全限定名来获取定义此类的二进制字节流；
+2. 将这个字节流所表示的静态存储结构转化为方法区的运行时数据结构
+3. 在内存中生成一个代表这个类的java.lang.Class对象，作为方法区这个类的各种数据的访问入口；加载阶段和连接阶段（Linked）
+
+的部分内容（如一部分字节码文件格式验证动作）是交叉进行的，加载阶段尚未完成，连接阶段可能已经开始，但这些夹在加载阶段之中进行的动作，仍然属于连接阶段的内容，这两个阶段的开始时间仍然保持着固定的先后顺序。
+
+## 验证
+
+​	验证是连接阶段的第一步，这一阶段的目的是为了确保Class文件的字节流中包含的信息符合当前虚拟机的要求，并且不会危害虚拟机自身的安全。
+
+​	验证阶段大致会完成4个阶段的检验动作：
+
+1. 文件格式验证：验证字节流是否符合Class文件格式的规范；例如：是否以魔术0xCAFEBABE开头、主次版本号是否在当前虚拟机的处理范围之内、常量池中的常量是否有不被支持的类型。
+2. 元数据验证：对字节码描述的信息进行语义分析（注意：对比javac编译阶段的语义分析），以保证其描述的信息符合Java语言规范的要求；例如：这个类是否有父类，除了java.lang.Object之外。
+3. 字节码验证：通过数据流和控制流分析，确定程序语义是合法的、符合逻辑的。
+4. 符号引用验证：确保解析动作能正确执行。
+
+验证阶段是非常重要的，但不是必须的，它对程序运行期没有影响，如果所引用的类经过反复验证，那么可以考虑采用-Xverifynone参数来关闭大部分的类验证措施，以缩短虚拟机类加载的时间。
+
+### **准备**
+
+​	准备阶段是正式为类变量分配内存并设置类变量初始值的阶段，这些变量所使用的内存都将在方法区中进行分配。这时候进行内存分配的仅包括类变量（被static修饰的变量），而不包括实例变量，实例变量将会在对象实例化时随着对象一起分配在堆中。其次，这里所说的初始值“通常情况”下是数据类型的零值，假设一个类变量的定义为：
+
+| 1    | publicstaticintvalue=123; |
+| ---- | ------------------------- |
+|      |                           |
+
+​	那变量value在准备阶段过后的初始值为0而不是123.因为这时候尚未开始执行任何java方法，而把value赋值为123的putstatic指令是程序被编译后，存放于类构造器()方法之中，所以把value赋值为123的动作将在初始化阶段才会执行。
+至于“特殊情况”是指：public static final int value=123，即当类字段的字段属性是ConstantValue时，会在准备阶段初始化为指定的值，所以标注为final之后，value的值在准备阶段初始化为123而非0.
+
+### **解析**
+
+​	解析阶段是虚拟机将常量池内的符号引用替换为直接引用的过程。解析动作主要针对类或接口、字段、类方法、接口方法、方法类型、方法句柄和调用点限定符7类符号引用进行。
+
+### **初始化**
+
+​	类初始化阶段是类加载过程的最后一步，到了初始化阶段，才真正开始执行类中定义的java程序代码。在准备阶段，变量已经付过一次系统要求的初始值，而在初始化阶段，则根据程序猿通过程序制定的主管计划去初始化类变量和其他资源，或者说：初始化阶段是执行类构造器<clinit>()方法的过程.
+
+<clinit>()方法是由编译器自动收集类中的所有类变量的赋值动作和静态语句块static{}中的语句合并产生的，编译器收集的顺序是由语句在源文件中出现的顺序所决定的，静态语句块只能访问到定义在静态语句块之前的变量，定义在它之后的变量，在前面的静态语句块可以赋值，但是不能访问
