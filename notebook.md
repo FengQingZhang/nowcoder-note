@@ -1879,3 +1879,1182 @@ ThreadLocal用于线程之间的数据隔离，ThreadLocal类创建一个线程�
 ​	类初始化阶段是类加载过程的最后一步，到了初始化阶段，才真正开始执行类中定义的java程序代码。在准备阶段，变量已经付过一次系统要求的初始值，而在初始化阶段，则根据程序猿通过程序制定的主管计划去初始化类变量和其他资源，或者说：初始化阶段是执行类构造器<clinit>()方法的过程.
 
 <clinit>()方法是由编译器自动收集类中的所有类变量的赋值动作和静态语句块static{}中的语句合并产生的，编译器收集的顺序是由语句在源文件中出现的顺序所决定的，静态语句块只能访问到定义在静态语句块之前的变量，定义在它之后的变量，在前面的静态语句块可以赋值，但是不能访问
+
+# 2022.1.25
+
+## spring事务
+
+1. spring本身并不去直接管理事务，而是提供了事务管理器接口，对于不同的框架或者数据源则用不同的事务管理器；而对于事务，它把相关的属性都封装到一个实体里去了，有以下的属性
+
+   ```java
+   int propagationBehavior; /**事务的传播行为**/
+   int isolationLevel；/**事务隔离级别**/
+   int timeout; /**事务完成的最短时间**/
+   boolean readOnly; /**是否只读**/
+   ```
+
+   Spring提供了对编程式事务和声明式事务的支持，编程式事务是嵌在业务代码中的，而声明事务是基于xml文件配置。
+
+2. readOnly-- 事务隔离级别，表示只读数据，不更新数据
+
+   ```
+   PROPAGATION_SUPPORTS--支持当前事务，如果当前没有事务，就以非事务方式执行。 
+   PROPAGATION_MANDATORY--支持当前事务，如果当前没有事务，就抛出异常。 
+   PROPAGATION_REQUIRES_NEW--新建事务，如果当前存在事务，把当前事务挂起。 
+   PROPAGATION_NOT_SUPPORTED--以非事务方式执行操作，如果当前存在事务，就把当前事务挂起。 
+   PROPAGATION_NEVER--以非事务方式执行，如果当前存在事务，则抛出异常。
+   ```
+
+
+
+**java.net 包中提供了两种常见的网络协议的支持：TCP、UDP，TCP和UDP是同一层的，位于IP层上层，**
+
+## 垃圾回收相关
+
+1. 一旦垃圾回收器准备好释放对象占用的存储空间，将首先调用其finalize（）方法，才会真正的回收对象占用的内存。
+2. 线程的释放是在run（）方法结束以后，此时线程的引用可能并未释放。
+
+
+
+**当线程在活动之前或活动期间处于正在等待、休眠或占用状态且该线程被中断时，抛出该异常**
+
+## JAVA反射提供的功能
+
+java反射机制主要提供了以下功能：
+
+1. 在运行时判断任意一个对象所属的类
+2. 在运行时构造任意一个类的对象
+3. 在运行时判断任意一个类所具有的成员变量和方法
+4. 在运行时获取泛型信息
+5. 在运行时调用任意一个对象的成员变量和方法
+6. 在运行时处理注解
+7. 生成动态代理
+
+# 2022.1.26
+
+## 高并发集合
+
+### 第一代线程安全集合
+
+Vector Hashtable 是怎么保证线程安全的。使用synchronized修饰方法
+
+缺点：效率低
+
+### 第二代线程非安全集合
+
+ArrayList、HashMap线程不安全，但是性能好，用来替代Vector、Hashtable
+
+使用ArrayList、HashMap需要线程安全怎么办呢
+
+使用Collections.synchronizedList(list);Collections.synchronizedMap(m);
+
+底层使用Synchronized代码块锁，虽然也是锁住了所有的代码，但是锁在方法里边，并所在方法外边性能可以理解为稍有提高。
+
+### 第三代线程安全集合
+
+在大量并发情况下如何提高集合的效率和安全呢
+
+java.util.concurrent.*
+
+ConcurrentHashMap
+
+CopyWriteArrayList;
+
+CopyOnWriteArraySet
+
+底层大都采用Lock锁，（1.8的ConcurrentHashMap不使用Lock锁），保证安全的同时，性能也很高。
+
+
+
+## 静态变量只能在类主体中定义，不能在方法中定义
+
+
+
+## Servlet
+
+![](img/Servlet的体系结构.png)
+
+HttpServlet 是GenericService的子类
+
+GenericServlet是抽象类，必须给出子类才能实例化，它给出了设计servlet的一些骨架，定义了servlet生命周期，还有一些得到名字、配置、初始化参数的方法，其设计的是和应用层协议无关的，也就是说你有可能用非http协议实现它。
+
+HttpServlet 是子类，当然就具有GenericServlet的一切特性，还添加了doGet，doPost，doPut，doTrace等方法对应处理http协议里的命令的请求响应过程。
+
+一般没有特殊需要，自己写的Servlet都扩展HttpServlet。
+
+自定义Servlet时尽量不要定义成员变量，多线程环境下定义的成员变量会成为线程共享变量，导致数据不一致问题
+
+## RMI
+
+RMI（Remote Method invocation）远程方法调用是一种计算机之间利用远程对象互相调用实现双方通讯机制。RMI采用的是TCP/IP协议。
+
+
+
+# 2022.1.27
+
+## Thread.yield()
+
+yield（）方法作用是：暂停正在执行的线程对象，并执行其他线程。yield()应该做的是让当前运行线程回到可运行状态，以允许具有相同优先级的其他线程获得运行机会。因此，使用yield()的目的是让相同优先级的线程之间能适当的轮转执行。但是，实际中无法保存yield()达到让步目的，因为让步的线程还有可能被线程调度再次选中。
+
+
+
+## 垃圾收集机制
+
+![](img/GC过程.png)
+
+1. 新生代：（1）**所有对象创建在新生代的Eden区，当Eden区满后触发新生代的Minor GC**，将Eden区和非空闲Survivor区存活的对象复制到另一空闲的Survivor区中，（2）保证一个Survivor区是空的，**新生代Minor GC就是在两个Survivor区之间互相复制存活对象，直到Survivor区满为止**。
+2. 老年代：当Survivor区也满了之后就通过MInor GC将对象复制到老年代。老年代也满了的话，就将触发Full GC，针对整个堆（包括新生代、老年代，持久代）进行垃圾回收。
+3. 持久代: 持久代如果满了，将触发Full GC。
+
+
+
+Synchronized和volatile区别
+
+- 关键字volatile是线程同步的轻量级实现，所以volatile性能肯定比synchronized要好，并且只能修改变量，而synchronized可以修饰方法，以及代码块。
+- 多线程访问volatile不会发生阻塞，而synchronized会出现阻塞
+- volatile能保证数据的可见性，但不能保证原子性，而synchronized可以保证原子性，也可以间接保证可见性，因为它会将私有内存和公共内存的数据同步。
+- 关键字volatile解决的下变量在多线程之间的可见性；而synchronized解决的是多线程之间资源同步问题。
+
+
+
+## 接口实现
+
+1. 必须实现接口中所有的方法。
+
+   在实现类中实现接口时，**方法的名字、返回值类型、参数的个数及类型**必须与接口中的完全一致，并且**必须实现接口中的所有方法。**
+
+2. 接口实现类相当于子类，子类的访问权限是不能比父类小的。
+
+   接口中所有方法默认都是public，至于为什么要是public，原因在于如果不是public，那么只能在同个包下被实现，可访问权限就降低很多了，那么在实现类中，实现的类相当于子类，子类的访问权限是不能比父类小的，而在java中一个类如果没有权限的修饰符，默认是friendly(同一个包内的其它类才可访问)，所以在实现类中一定要写public
+
+
+
+## 函数执行顺序
+
+父类先于子类，静态先于非静态
+
+父类静态域——> 子类静态域——> 父类成员初始化——> 父类构造块——>父类构造方法——>子类成员初始化——>子类构造块——>子类构造方法；
+
+
+
+## 集合
+
+![](img/Collection.png)
+
+ps：Map和Collection是并行的，map并未继承Collection，Map和set不重复，list可以重复                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                
+
+线程安全的集合：vector、stack、hashtable，enumeration线程安全的，其他的都是线程不安全的
+
+### Collection接口常用的方法
+
+1. size（）返回集合中元素的个数
+2. add（Object ob）向集合中添加一个元素
+3. addAll (Colletion coll) 将形参coll包含的所有元素添加到当前集合中。
+4. isEmpty() 判断这个集合是否为空
+5. clear() 清空集合元素
+6. contains(Object obj):判断集合中是否包含指定的obj元素
+   ① 判断的依据：根据元素所在类的equals()方法进行判断
+   ②明确：如果存入集合中的元素是自定义的类对象，要去：自定义类要重写equals()方法
+7. constainsAll(Collection coll):判断当前集合中是否包含coll的所有元素
+8. rentainAll(Collection coll):求当前集合与coll的共有集合，返回给当前集合
+9. remove(Object obj):删除集合中obj元素，若删除成功，返回ture否则
+10. removeAll(Collection coll):从当前集合中删除包含coll的元素
+11. equals(Object obj):判断集合中的所有元素 是否相同
+12. hashCode():返回集合的哈希值
+13. toArray(T[] a):将集合转化为数组
+    ①如有参数，返回数组的运行时类型与指定数组的运行时类型相同。
+14. iterator():返回一个Iterator接口实现类的对象,进而实现集合的遍历。
+15. 数组转换为集合： Arrays.asList(数组)
+
+
+
+# 2022.1.28
+
+## 序列化反序列化
+
+### 通俗讲法
+
+把看懂的转换为看不懂的，就序列化。
+
+把看不懂的转换为看得懂的，就是反序列化。
+
+
+
+## 中间件
+
+​	中间件是一种独立的系统软件或服务程序，分布式应用软件借助这软件在不同的技术之间共享资源。中间件位于客户机 / 服务器的操作系统之上，管理计算机资源和网络通讯。是连接两个应用程序或独立系统的软件。相连的系统，即使他们具有不同的接口，但通过中间件互相之间仍能交换信息。执行中间件的一个关键途径的信息传递。通过中间件，应用程序可以工作于多平台或OS环境。（中间件并不能提高内核的效率，一般只是负责网络信息的分发处理）
+
+
+
+## ServerSocket服务器，Socket客户端
+
+## 静态方法
+
+1. 在静态方法中可直接调用本类的静态方法，也可以使用【类名.静态方法名】调用其他类的静态方法。
+
+2. 静态方法中可以调用实例方法，但是必须要new一个对象，不可以直接调用。
+
+3. 静态方法不能用this调用本类的类方法，使用【new 类名().实例方法名】调用
+
+   如果在static修饰的方法中使用this关键字，则这个关键字就无法指向合适的对象。
+
+   因为static修饰的方法是类方法，先于任何实例存在。static修饰的方法在类加载的时候就已经存在了，实例是在创建时才在内存中生成。而this关键字总是指向当前调用该方法的对象。
+
+
+
+## 子类调用父类方法
+
+​	子类构造函数调用父类构造函数用Super
+
+​	子类重写父类方法后，若想调用父类中被重写的方法， 用super
+
+​	未被重写的方法可以直接调用。
+
+
+
+## 类变量
+
+被static关键字修饰的变量是静态的，静态变量随着类的加载而加载，所以也称为类变量。
+
+
+
+ThreadLocalMap中使用开放地址法类处理散列冲突，而HashMap中使用的是分离链表法。之所以采用不同的方式主要是因为:在ThreadLocalMap中的散列值分散得十分均匀，很少会出现冲突。而且ThreadLocalMap经常需要清除无用的对象，使用纯数组更加方便，
+
+
+
+# 2022.1.29
+
+**j2sdk是JAVA的开发环境包它包含JDK（开发工具包，包含JRE）和JRE（运行时环境包），简称JDK。J2SDK包含很多东西，比如java language、的、Deloyment等。**
+
+**Appletviewer 是运行applet（即Java小应用程序，是可随网页下载到客户端由浏览器解释执行的java程序）的，applet不用main方法，继承applet类即可**
+
+
+
+## TreeSet和LinkedHashSet
+
+TreeSet自然排序、LinkedHashSet按添加顺序排序
+
+TreeSet使用二叉树的原理对新add（）的对象按照指定的顺序排序（升序，降序）**，每增加一个对象都会进行排序，将对象插入的二叉树指定的位置
+
+HashSet存储元素的顺序并不是按照存入时的顺序（和List显然不同）而是按照哈希值来存的所以取数据也是按照哈希值取的
+
+ LinkedHashSet继承于HashSet，是具有可预知迭代顺序的 Set 接口的哈希表和链接列表实现。此实现与 HashSet 的不同之外在于，后者维护着一个运行于所有条目的双重链接列表。此链接列表定义了迭代顺序，即按照将元素插入到 set 中的顺序（插入顺序）进行迭代。
+
+
+
+## Java类成员的访问控制权限
+
+public > protected > 同包（default） > private
+
+
+
+**基类就是父类，也叫超类。导出类就是子类，也叫派生类**
+
+
+
+**java.exe是java虚拟机，javadoc.exe用来制作java文档，jdb.exe是java的调试器，javaprof.exe是剖析工具**
+
+
+
+**JAVA虚拟机中通常使用UTF-16的方式保存一个字符**
+
+**ResourceBundle能够依据Local的不同，选择性的读取与Local对应后缀的properties文件，以达到国际化的目的。**
+
+
+
+## CMS
+
+CMS全称Concurrent Mark Sweep，是一款并发的、使用标记-清除算法的垃圾回收器，以牺牲吞吐量为代价来获的最短回收停顿时间的垃圾回收器，对于要求服务器响应速度的应用上，这种垃圾回收器非常适合。CMS的基础算法是：标记-清除
+
+它的过程可以分为以下6个步骤：
+
+- 初始标记（STW initial mark）
+- 并发标记（Concurrent marking）
+- 并发预清理（Concurrent precleaning）
+- 重新标记 （STW remark）
+- 并发清理（Concurrent sweeping）
+- 并发重置（Concurrent reset）
+
+![](img/CMS.png)
+
+1. 初始标记：在这个阶段，需要虚拟机停顿正在执行的任务，官方的叫法STW（Stop The Word）。这个过程从垃圾回收的“根对象”开始，只扫描到能够和“根对象”直接关联的对象，并作标记。所以这个过程虽然暂停了整个JVM，但是很快就完成了。
+2. 并发标记：这个阶段紧随初始标记阶段，在初始标记的基础继续向下追溯标记。并发标记阶段，**应用程序的线程和并发标记的线程并发执行，所以用户不会感受到停顿。**
+3. 并发预清理：并发预清理阶段仍然是并发的。在这个阶段，虚拟机查找在执行并发标记阶段新进入老年代的对象（可能会有一些对象从新生代晋升到老年代，或者有一些对象被分配到老年代）。通过重复扫描，减少下一个阶段“重新标记”的工作，因为下一个阶段会Stop The World
+4. 重新标记：这个阶段会暂停虚拟机，收集器线程扫描在CMS堆中剩余的对象。扫描从"根对象"开始向下追溯，并发处理对象关联。
+5. 并发清理：清理垃圾对象，这个阶段收集线程和应用程序线程并发执行
+6. 并发重置：这个阶段，重置CMS收集器的数据结构，等待下一次垃圾回收。
+
+
+
+**类方法是指用Static修饰的方法，普通方法叫做对象方法**
+
+
+
+## 线程进程
+
+1. 一个线程只能属于一个进程，而一个进程可以有多个线程，但至少有一个线程（通过说的主线程）。
+2. 资源分配给进程，同一进程的所有线程共享该进程的所有资源。
+3. 线程在执行过程中，需要协作同步。不同进程的线程间要利用消息通信的办法实现同步。
+4. 处理机分给线程，即真正在处理机上运行的是线程。
+5. 线程是指进程内的一个执行单元，也是进程内的可调度实体。
+
+
+
+**instance是java的二元运算符，用来判断他左边的对象是否为右面类（接口，抽象类，父类）的实例**
+
+
+
+## JVM参数配置
+
+-Xms：1G ， 就是说初始堆大小为1G 
+-Xmx：2G ， 就是说最大堆大小为2G 
+-Xmn：500M ，就是说年轻代大小是500M（包括一个Eden和两个Survivor） 
+-XX:MaxPermSize：64M ， 就是说设置持久代最大值为64M 
+-XX:+UseConcMarkSweepGC ， 就是说使用使用CMS内存收集算法 
+-XX:SurvivorRatio=3 ， 就是说Eden区与Survivor区的大小比值为3：1：1
+
+
+
+## 运行时常量池
+
+- 运行时常量池是什么
+
+     ```
+     运行时常量池是每一个类或接口的常量池的运行时表示形式。
+     具体体现就是在java编译后生成的.class文件中，会有class常量池，也就是静态的运行时常量池。
+     ```
+
+- 运行时常量池存放的位置
+
+  ```
+  运行时常量池一直是方法区的一部分，在不同版本的jdk中，由于方法区位置的变化，运行时常量池所处的位置也不一样.JDK1.7及之前方法区位于永久代.由于一些原因在JDK1.8之后彻底祛除了永久代,用元空间代替。
+  ```
+
+- 运行时常量池存放什么？
+  
+  ```
+     存放编译期生成的各种字面量和符号引用；（字面量和符号引用不懂的同学请自行查阅）
+     运行时常量池中包含多种不同的常量，包括编译期就已经明确的数值字面量，也包括到运行期解析后才能够获得的方法或者字段引用。 此时不再是常量池中的符号地址了，这里换为真实地址。
+  ```
+  
+- 运行时常量池与字符串常量池？
+  
+  ```
+  字符串常量池：在JVM中，为了减少相同的字符串的重复创建，为了达到节省内存的目的。会单独开辟一块内存，用于保存字符串常量，这个内存区域被叫做字符串常量池.
+  ```
+  
+- 字符串常量池位置？
+
+   	JDK1.6时字符串常量池，被存放在方法区中（永久代），而到了JDK1.7，因为永久代垃圾回收频率低；而字符串使用频率比较高，不能及时回收字符串，会导致导致永久代内存不足，就被移动到了堆内存中。
+
+# 2022.1.30
+
+## Java程序初始化顺序（记了好多遍了）
+
+1. 父类的静态代码块
+2. 子类的静态代码块
+3. 父类的普通代码块
+4. 父类的构造方法
+5. 子类的普通代码块
+6. 子类的构造方法
+
+
+
+**JDK1.8的ConcurrentHashMap 采用 CAS+Synchronized 保证线程安全。JDK1.7 及以前采用segment的分段锁机制实现线程安全，其中segment继承自ReentranLock，因此采用Lock锁来保证线程安全**
+
+## Spring框架
+
+Spring 是轻量级的控制反转（IoC）和面向切面（AOP）的容器框架。
+
+轻量——从大小与开销两方面而言Spring都是轻量的。完整的Spring框架可以在一个大小只有1MB多的JAR文件里发布。并且Spring所需的处理开销也是微不足道的。此外，Spring是非侵入式的：典型地，Spring应用中的对象不依赖于Spring的特定类。  
+
+   控制反转——Spring通过一种称作控制反转（IoC）的技术促进了松耦合。当应用了IoC，一个对象依赖的其它对象会通过被动的方式传递进来，而不是这个对象自己创建或者查找依赖对象。你可以认为IoC与JNDI相反——不是对象从容器中查找依赖，而是容器在对象初始化时不等对象请求就主动将依赖传递给它。  
+
+   面向切面——Spring提供了[面向切面编程](https://baike.baidu.com/item/面向切面编程)的丰富支持，允许通过分离应用的业务逻辑与系统级服务（例如审计（auditing）和事务（transaction）管理）进行内聚性的开发。应用对象只实现它们应该做的——完成业务逻辑——仅此而已。它们并不负责（甚至是意识）其它的系统级关注点，例如日志或事务支持。  
+
+   容器——Spring包含并管理应用对象的配置和生命周期，在这个意义上它是一种容器，你可以配置你的每个bean如何被创建——基于一个可配置原型（prototype），你的bean可以创建一个单独的实例或者每次需要时都生成一个新的实例——以及它们是如何相互关联的。然而，Spring不应该被混同于传统的重量级的EJB容器，它们经常是庞大与笨重的，难以使
+
+![](img/Spring架构图.png)
+
+spring框架是一个分层架构，由7个定义良好的模块组成。
+
+核心容器，spring上下文，Spring AOP，Spring DAO，Spring ORM，Spring Web，Spring MVC。
+
+
+
+this的作用其中一个就是在一个构造方法中调用另一个构造方法，格式为this(参数)；
+
+super是调用父类的方法；
+
+A(a)这种形式是在new一个类时使用。
+
+
+
+## final
+
+final修饰的方法，不允许被子类覆盖（重写）
+
+final修饰的类，不能被继承。
+
+final修饰的变量，不能改变值。
+
+final修饰的引用类型，不能再指向别的东西，但是可以改变其中的内容。
+
+
+
+## CGI（Common Gateway interface）
+
+​	通用网关接口，简称CGI，是一种根据请求信息动态产生回应内容的技术。通过CGI，Web服务器可以将根据请求不同启动不同的外部程序，并将请求内容转发给该程序，在程序执行结束后，将执行结果作为回应返回给客户端。也就是说，对于每个请求，都要产生一个新的进程处理。因为每个进程都会占有很多服务器的资源和时间，这就导致服务器无法同时处理很多的并发请求。另外CGI程序都是与操作系统平台相关的，在互联网爆发的初期，CGI为开发互联网应用做出了很大贡献，但是随着技术的发展，开发逐渐衰落。
+
+
+
+## Servlet
+
+servlet 最初是在1995年由James Gosling提出的，因为使用该技术需要复杂的Web服务器支持，所以当时并没有得到重视，也就放弃了。后来随着Web应用复杂度提升，并要求提供更高的并发处理能力，Servlet被重新捡起，并在java平台上得到实现，现在提起Servlet，指的都是Java Servlet。Java Servlet 要求必须运行在web服务器当中，与web服务器之间属于分工和互补关系。确切的说，在实际运行的时候java servlet与Web服务器会融为一体， 如同一个程序一样运行在同一个Java虚拟机（JVM）当中。与CGI不同的是，Servlet对每个请求都是单独启动一个线程，而不是进程。这种处理方式大幅度地降低了系统里的进程数量，提高了系统的并发处理能力。另外因为Java Servlet是运行在虚拟机之上的，也就解决了跨平台问题。如果没有Servlet的出现，也就没有互联网的今天。
+在Servlet出现之后，随着使用范围的扩大，人们发现了它的一个很大的一个弊端。那就是 **为了能够输出HTML格式内容，需要编写大量重复代码，造成不必要的重复劳动。为了解决这个问题，基于Servlet技术产生了JavaServet Pages技术，也就是JSP。Servlet和JSP两者分工协作，Servlet侧重于解决运算和业务逻辑问题，JSP则侧重于解决展示问题。** Servlet与JSP一起为Web应用开发带来了巨大的贡献，后来出现的众多Java Web应用开发框架都是基于这两种技术的，更确切的说，都是基于Servlet技术的。
+
+****
+
+​	servlet 处于服务器进程中，它通过多线程方式运行其service方法，一个实例可以服务于多个请求，并且其实例一般不会销毁。而CGI对每个请求都产生新的进程，服务完成后就销毁，所以效率上低于Servlet
+
+
+
+## Servlet周期
+
+初始化init() ——> service() 处理请求——>destory（）销毁。
+
+
+
+# 2022.1.31
+
+**JAVA 1.8 之后，Java接口的修饰符可以为 abstract**
+
+
+
+**CyclicBarrier让一组线程相互等待到某一状态再执行**
+
+**CountDownLatch是一结束个线程等待其他线程结束再执行**
+
+
+
+
+
+![](img/jsp内置对象.png)
+
+
+
+## final
+
+1. final修饰变量，则等同于常量
+2. final修饰方法中的参数，称为最终参数。
+3. final修饰类，则类不能被继承
+4. final修饰方法，则方法不能被重写。
+
+
+
+​	**在Java7之前，switch只能支持 byte、short、char、int或者其对应的封装类以及Enum类型。在Java7中，也支持了String类型 ，String byte short int char Enum 类型**
+
+
+
+抽象类在方法是可以有方法体的。JDK1.8之后，接口中的方法也可以有方法体，用default关键字修饰方法。
+
+## 方法的重写（override）两同两小一大原则
+
+1. 方法名相同，参数类型
+2. 子类返回类型小于等于父类方法返回类型。
+3. 子类抛出异常小于等于父类方法抛出异常。
+4. 子类访问权限大于等于父类方法访问权限。public > protected > 同包（default） > private
+
+
+
+## 抽象类接口
+
+### 抽象类
+
+1. 抽象类中可以构造方法
+2. 抽象类中可以存在普通属性，方法，静态属性和方法
+3. 抽象类中可以存在抽象方法。
+4. 如果一个类中有一个抽象方法，那么当前类一定是抽象类；抽象类中不一定有抽象方法。
+5. 抽象类中的抽象方法，需要有子类实现，如果子类不实现，则子类也需要定义为抽象的。
+
+### 接口
+
+1. 在接口中只有方法的声明，没有方法体。
+2. 在接口中只有常量，因为定义的变量，在编译的时候都会默认加上public static final
+3. 在接口中的方法，永远都被public来修饰。
+4. 接口没有构造方法，也不能实例化接口的对象。
+5. 接口可以实现多继承。
+6. 接口中定义的方法都需要有实现类来实现，如果实现类不能实现接口中的所有方法，则实现类定义为抽象类。
+
+## 标识符
+
+1. 标识符的组成元素是字母（a-z，A-Z），数字（0~9），下划线（_）和美元符号（$）。
+2. 标识符不能以数字开头。
+3. java的标识符是严格区分大小写的。
+4. 标识符的长度可以是任意的。
+5. 关键字以及null、true、false不能用于自定义的标识符。
+
+
+
+**forward：请求转发:服务器行为，地址栏不变**
+
+**redirect：请求重定向：客户端行为，本质上为2次请求，地址栏改变，前一次请求对象消失**
+
+
+
+## 类之间的常见关系
+
+- is a 是你 表示继承。父类与子类
+- has a 有你 聚合关系，拥有关系，是**关联关系**的一种特例，是整体和部分的关系。比如鸟群和鸟的关系是聚合关系，鸟群中每个部分都是鸟。
+- uses a 一切拜托你：依赖关系，A类会用到B类，这种关系具有偶然性，临时性。但B类的变化会影响A类。这种在代码中的体现为：A类方法中的参数包含了B类。
+- 关联关系 **：**A类会用到B类，这是一种强依赖关系，是长期的并非偶然。在代码中的表现为：A类的成员变量中含有B类。
+
+
+
+# 2022.2.1
+
+## 源文件
+
+一个java文件可以包含多个java类，但是只能包含一个public类，并且public类的类名必须与java文件名相同，
+
+
+
+## abstract
+
+1. abstract不能与final并列修饰同一个类
+2. abstract类中不应该有private的成员
+3. 若类中方法有abstract修饰的，该类必须abstract修改。接口方法默认public abstract
+4. 在jvm中static方法在静态区，静态区无法调用非静态区属性。
+
+
+
+## static
+
+1. 随着类的加载而加载
+2. 优选于对象存储
+3. 被所有对象所共享
+4. 可以直接被类名随调用
+
+ps：
+
+1. 静态方法只能访问静态成员
+2. 静态方法中不可以写this，super关键字
+3. 主函数是静态的
+
+
+
+## 修饰符（也记了好多遍了）
+
+| 修饰符    | 类内部 | 同一个包 | 子类 | 任何地方 |
+| --------- | ------ | -------- | ---- | -------- |
+| private   | yes    |          |      |          |
+| default   | yes    | yes      |      |          |
+| protected | yes    | yes      | yes  |          |
+| public    | yes    | yes      | yes  | yes      |
+
+
+
+## java类加载机制
+
+![](img/java类加载机制.png)
+
+
+
+​	如果子类构造器没有显示地调用超类的构造器，则将自动地调用超类默认（没有参数）的构造器。如果超类没有不带参数的构造器，并且在子类的构造器中有没有显示地调用超类的其他构造器，则Java编译器将报告错误。使用super调用构造器的语句必须是子类构造器的第一条语句。
+
+
+
+java.util.Collection 是一个集合接口。它提供了对集合对象进行基本操作的通用接口方法。Collection接口在Java 类库中有很多具体的实现。Collection接口的意义是为各种具体的集合提供了最大化的统一操作方式。
+
+java.util.Collections 是一个包装类。它包含有各种有关集合操作的静态多态方法。此类不能实例化，就像一个工具类，服务于Java的Collection框架。
+
+
+
+# 2022.2.2
+
+## super与this
+
+1. super()表示调用父类构造函数、this() 调用自己的构造函数，而自己的构造函数第一行要使用super()调用父类的构造函数，所以这两不能在一个构造函数中会出现重复引用的情况
+2. super（）和this（）必须在构造函数第一行，所以这一点也表明他俩不能在第一构造函数中
+3. this（）和super（）都指的是对象，所以，均不可以在static环境中使用。包括：static变量，static方法，static语句块（里面不能使用非static类型的）
+
+
+
+![](img/java中不需要强制向下转型的合法数字类型转换图.png)
+
+## Throwable
+
+![](img/Throwable.png)
+
+都是Throwable的子类：
+
+1. Exception（异常）：是程序本身可以处理的异常。
+2. Error（错误）：是程序无法处理的错误。这些错误表示故障发生于虚拟机试图执行应用时，一般不需要程序处理
+3. 检查异常（编译器要求必须处置的异常）：除了Error，RuntimeException及其子类以外，其他的Exception类及其子类都属于可查异常。这种异常的特点是Java编译器会检查它，也就是说程序中可能出现这类异常，要么用try-catch语句捕获它，要么用throw是子句声明抛出它，否则编译不会通过
+4. 非检查异常（编译器不要求处置的异常）：包括运行时异常（RuntimeException与其子类）和错误（Error）
+
+## Spring IoC
+
+Inversion of Control
+
+​	控制反转，是一种面向对象编程的设计思想。
+
+Dependency Injection
+
+​	依赖注入，是IOC思想的实现方式。
+
+IoC Container
+
+​	IoC容器，是实现依赖注入的关键，本质上是一个工厂。
+
+# 2022.2.3
+
+## 抽象类总结规定
+
+1. 抽象类不能被实例化，如果被实例化，就会报错，编译无法通过，只有抽象类的非抽象子类可以创建对象
+2. 抽象类中不一定包含抽象方法，但是有抽象方法的类必定是抽象类。
+3. 抽象类中的抽象方法只是声明，不包含方法体，就是不给出方法的具体实现也就是方法的具体功能。
+4. 构造方法，类方法（用static修饰的方法）不能声明为抽象方法。
+5. 抽象类的子类必须给出抽象类中抽象方法的具体实现，除非该子类也是抽象类。
+
+
+
+构造代码块：类中直接用{}定义，每次创建对象时执行。
+
+
+
+byte类型的变量在做运算时会被转换为int类型的值。
+
+
+
+## spring的优点
+
+- 轻量，基本版本大约2mb
+- 通过控制反转和依赖注入实现松耦合。
+- 支持面向切面的编程，并且把应用业务逻辑的系统服务分开。
+- 通过切面和模板减少样板式代码
+- 方便集成各种优秀框架，内部提供了对各种优秀框架的支持
+- 方便程序的测试，Spring支持Junit4，添加注解便可以测试Spring程序。
+
+## Spring用到了哪些设置模式
+
+1. 简单工厂模式：BeanFactory就是简单工厂模式的体现，根据出入一个唯一标识来获得Bean对象
+
+   ```java
+   @verride
+   public Object getBean(String name) throws BeansException{
+   	assertBeanFactoryActive();
+   	return getBeanFactory().getBean(name);
+   }
+   ```
+
+2. 工厂模式：FactoryBean就是典型的工厂模式。spring在使用getBean()调用获得该bean时，会自动调用该bean的getObject()方法。每个Bean都会对应一个FactoryBean，如SqlSessionFactory对应SqlSessionFactoryBean。
+
+3. 单例模式：一个类仅有一个实例，提供一个访问它的全局访问点。Spring创建Bean实例默认是单例的。
+
+4. 适配器模式：SpringMVC中的适配器HandlerAdatper。由于应用会有多个Controller实现，如果需要直接调用Controller方法，那么需要先判断是由哪一个controller处理请求，然后调用相应的方法。当增加新的Controller，需要修改原来的逻辑。违反了开闭原则（对修改关闭，对拓展开放）
+
+   为此，Spring提供了一个适配器接口，每一种 Controller 对应一种 `HandlerAdapter` 实现类，当请求过来，SpringMVC会调用`getHandler()`获取相应的Controller，然后获取该Controller对应的 `HandlerAdapter`，最后调用`HandlerAdapter`的`handle()`方法处理请求，实际上调用的是Controller的`handleRequest()`。每次添加新的 Controller 时，只需要增加一个适配器类就可以，无需修改原有的逻辑。
+
+   常用的处理器适配器：`SimpleControllerHandlerAdapter`，`HttpRequestHandlerAdapter`，`AnnotationMethodHandlerAdapter`。
+
+   ```java
+   // Determine handler for the current request.
+   mappedHandler = getHandler(processedRequest);
+   
+   HandlerAdapter ha = getHandlerAdapter(mappedHandler.getHandler());
+   
+   // Actually invoke the handler.
+   mv = ha.handle(processedRequest, response, mappedHandler.getHandler());
+   
+   public class HttpRequestHandlerAdapter implements HandlerAdapter {
+   
+       <a href="/profile/992988" data-card-uid="992988" class="js-nc-card" target="_blank" from-niu="default">@Override
+       public boolean supports(Object handler) {//handler是被适配的对象，这里使用的是对象的适配器模式
+           return (handler instanceof HttpRequestHandler);
+       }
+   
+       </a><a href="/profile/992988" data-card-uid="992988" class="js-nc-card" target="_blank" from-niu="default">@Override
+       </a><a href="/profile/187852900" data-card-uid="187852900" class="js-nc-card" target="_blank" from-niu="default">@Nullable
+       public ModelAndView handle(HttpServletRequest request, HttpServletResponse response, Object handler)
+           throws Exception {
+   
+           ((HttpRequestHandler) handler).handleRequest(request, response);
+           return null;
+       }
+   }</a>
+   ```
+
+5. 代理模式：spring的aop使用了动态代理，有两种方式JdkDynamicAopProxy和Cglib2AopProxy
+
+6. 观察者模式：spring中observer模式常用的地方是listener的实现。如ApplicationListener
+
+7. 模板模式：Spring中jdbcTemplate、hibernateTemplate等。
+
+# 2022.2.4
+
+抽象类方法默认访问权限都是default
+
+
+
+抽象类不能被实例化，抽象类和抽象方法必须被abstract修饰。
+
+
+
+接口就是访问的，默认访问权限都是public
+
+
+
+final不能被子类覆盖，但是基类的private方法，只有非private方法才能被覆盖。子类虽然继承了基类的所有内容，但是private和构造器等对子类是不可见的，不能直接访问，但是可以调用基类的非private方法从而访问基类的private方法
+
+
+
+Object是引用数据类型，只申明而不创建实例，只会在栈内存中开辟空间，默认为空，空占1bit
+
+
+
+Math.round算法为Math.floor(x+0.5),即将原来的数字加上0.5后再向下取整。
+
+
+
+运行命令 java + 程序名称不加后缀。
+
+编译命令javac + java程序名字加后缀.java
+
+flush() 函数强制将缓冲区中的字符流，字节流等输出，目的是如果输出流输出到缓冲区完成后，缓冲区并没有填满，那么缓冲区将会一直等待被填满。
+
+
+
+![](img/Object类.png)
+
+Java 的反射（reflection）机制是指在程序的运行状态中，可以构造任意一个类的对象，可以了解任意一个对象所属的类，可以了解任意一个类的成员变量和方法，可以调用任意一个对象的属性和方法。
+
+这个种动态获取程序信息以及动态调用对象的功能称为java语言的反射机制。反射被视为动态语言的关键
+
+# 2022.2.5
+
+- 同步代码块（synchronized(this)，synchronized(类实例对象)，锁是小括号()中的实例对象）
+- 同步非静态方法（synchronized method），锁的是当前对象的实例对象
+
+获取类锁
+
+- 同步代码块（synchronized(类.class)），锁是最小括号 () 中的类对象（Class对象）
+- 同步静态方法（synchronized static method），锁是当前对象的类对象（Class 对象）
+
+总结
+
+- 有线程访问对象的同步代码块时，另外的线程可以访问该对象的非同步代码块
+- 若锁住的是同一个对象，一个线程在访问对象的同步代码块时，另一个访问对象的同步代码块的线程会被阻塞。
+- 若锁住的是同一个对象，一个线程在访问对象的同步方法时，另一个访问对象的同步方法的线程会被阻塞。
+- 若锁住的是同一个对象，一个线程在访问对象的同步代码块时，另一个访问对象同步方法的线程会被阻塞，反之亦然。
+- 同一个类的不同对象的锁互不干扰
+- 类锁由于也是一种特殊的对象锁，因此表现和上述一致，而由于一个类只有一把对象锁，所以同一个类的不同对象使用类锁将会是同步的
+- 类锁和对象锁互不干扰
+
+
+
+![](img/java io.png)
+
+
+
+## 重写原则
+
+1. 两同：方法名和参数列表相同
+2. 两小：返回值或声明异常比父类小（或相同）  
+3. 一大：访问修饰符比父类的大（或相同）
+
+![](img/字节流和字符流.png)
+
+
+
+
+
+Object中的getClass()返回的是当前运行的类
+
+Class中的getName()方法针对引用类型的返回的是包名+类名
+
+
+
+异常分为两种，一种为运行异常RuntimeException，另一种为检查异常CheckedException。
+
+对于运行异常，编译器没有强制对其进行捕获。会把异常一直往上层抛出，直到遇到处理代码为止。常见的运行异常有：nullpointexception(空指针异常)，indexoutofboundexception(越界异常)。。。。。
+
+检查异常，所有继承自Exception并且不是运行异常的都是检查异常，在程序中需要用try catch进行捕获。常见的有IO异常和SQL异常。
+
+# 2022.2.6
+
+## 引用类型
+
+### 分类
+
+​	JDK 1.2之前，一个对象只有“已被引用”和“未被引用”两种状态，这将无法描述某些特殊情况下的对象，比如，当内存充足时需要保留，而内存紧张时才需要被抛弃的一类对象。
+
+​	所以在JDK1.2之后，Java对引用的概念进行了扩充，将引用分成了：强引用（Strong Reference）、软引用（Soft Reference）、弱引用（weak Reference）、虚引用（Phantom Reference）4种，这4种引用的强度依次减弱。
+
+### 强引用
+
+​	Object obj = new Object()；//只要ob还指向Object对象。Object对象就不会被回收obj = null。//手动置null
+
+只要强引用存在，垃圾回收器将永远不会回收被引用的对象，哪怕内存不足时，jvm也会直接抛出OutOfMemoryError，不会去回收。如何想中断强引用与对象之间的联系，可以显示的将强引用赋值为null、这样一来，jvm就可以适时回收对象了。
+
+### 软引用
+
+​	软引用是用来描述一些非必需但仍有用的对象。在内存足够的时候，软引用对象不会被回收，只有在内存不足时，系统则会回收软引用对象，如果回收了软引用对象之后仍然没有足够的内存，才会抛出内存溢出异常这种特性常常被用来实现缓存技术，比如网页缓存，图片缓存等。
+
+在 JDK1.2 之后，用java.lang.ref.SoftReference类来表示软引用。
+
+### 弱引用
+
+​	弱引用的引用强度比软引用要更弱一些，无论内存是否足够，只有jvm开始进行垃圾回收，那些被弱引用关联的对象都会被回收。在JDK1.2之后。用java.lang.WeakReference来表示弱引用。
+
+### 虚引用
+
+​	虚引用是最弱的一种引用关系，如果一个对象仅持有虚引用，那么它就和没有任何引用一样，它随时可能会被回收，在 JDK1.2 之后，用 PhantomReference 类来表示，通过查看这个类的源码，发现它只有一个构造函数和一个 get() 方法，而且它的 get() 方法仅仅是返回一个null，也就是说将永远无法通过虚引用来获取对象，虚引用必须要和 ReferenceQueue 引用队列一起使用。
+
+
+
+## **volatile**
+
+**1. 每次从内存中取值，不从缓存中什么的拿值。这就保证了用** **volatile修饰的共享变量，每次的更新对于其他线程都是可见的。**
+
+**2.** **volatile保证了其他线程的立即可见性，就没有保证原子性。**
+
+**3.由于有些时候对** **volatile的操作，不会被保存，说明不会造成阻塞。不可用与多线程环境下的计数器。**
+
+
+
+## Java体系结构
+
+Java体系结构包括四个独立但相关的技术：
+
+- Java程序设计语言
+- Java.class文件格式
+- Java应用编程接口（API）
+- Java虚拟机
+
+四者的关系：
+
+  当我们编写并运行一个Java程序时，就同时运用了这四种技术，用**Java程序设计语言**编写源代码，把它编译成**Java.class文件格式**，然后再在**Java虚拟机中运行class文件**。当程序运行的时候，它通过调用class文件实现了**Java API的方法**来满足程序的Java API调用
+
+
+
+System是java.lang中的类，out为System中的一个静态成员，out是java.io.PrintStream类的对象，而println()是ava.io.PrintStream类的方法，所有可以调用类.静态方法.println()方法。
+
+
+
+## JAVA内存区域
+
+![](img/java内存区域.png)
+
+JAVA的jvm的内存可以分为3个区：堆（heap），栈（Stack）和方法区（method）
+
+栈区：
+
+1. 每个线程包含一个栈区，栈中只保存方法中（不包含对象的成员变量）的基础数据类型和自定义对象的引用（不是对象），对象都存放在堆区中
+2. 每个栈中的数据（原始类型和对象引用）都是私有的，其他栈不能访问
+3. 栈分为3个部分：基本类型变量区、执行环境上下文，操作指令区（存放操作指令）。
+
+堆区：
+
+1. 存储的全部是对象实例，每个对象都包含一个与之对应的class的信息（class信息存放在方法区）。
+2. jvm只有一个堆区（heap）被所有线程共享，堆中不存放基本类型和对象引用，只存放对象本身，几乎所有的对象实例和数组都在堆中分配。
+
+方法区：
+
+1. 又叫静态区，跟堆一样，被所有的线程共享，它用于存储已经被虚拟机加载的类信息、常量、静态变量、即时编译器编译后的代码等数据。
+
+# 2022.2.7
+
+## transient
+
+​	transient,变量修饰符，如果用transient声明一个实例变量，当对象存储时，它的值不需要维持。当一个变量不希望被持久化的时候，比如说一些账号密码，就可以用transient关键字来表示该变量不参与序列化过程。
+
+
+
+
+
+三元操作符如果遇到可以转换为数字的类型，会做自动类型提升。
+
+比如
+
+```java
+Object o1 = (false) ? new Double(1.0) : new Integer(2);
+System.out.println(o1);
+```
+
+会打印2.0
+
+
+
+## 两同两小一大
+
+方法名相同，参数类型相同
+
+子类返回类型小于等于父类方法返回类型
+
+子类抛出异常小于等于父类方法抛出异常
+
+子类访问权限大于等于父类方法访问权限。
+
+
+
+CountDownLatch 是等待一组线程执行完，才执行后面的代码。此时这组线程已经执行完。
+
+CyclicBarrier是等待一组线程至某个状态后再同时全部继续执行线程。此时这组线程还未完成。
+
+
+
+低级向高级是隐式类型转换，高级向低级必须强制类型转换，byte<char<short<int<long<float<double
+
+
+
+Java 语言是一个面向对象的语言，但是Java中的基本数据类型却是不面向对象的，这在实际使用时存在很多的不便，为了解决这个不足，在设计类时为每个基本数据类型设计了一个对应的类进行代表，即包装类。对应的基本类型和包装类如下表：
+
+| 基本数据类型 | 包装类    |
+| ------------ | --------- |
+| byte         | Byte      |
+| boolean      | Boolean   |
+| short        | Short     |
+| char         | Character |
+| int          | Integer   |
+| long         | Long      |
+| float        | Float     |
+| double       | Double    |
+
+# 2022.2.8
+
+## 什么是AOP
+
+​	面向切面编程，作为面向对象的一种补充，将公共逻辑（事务管理、日志、缓存等）封装成切面，跟业务代码进行分离，可以减少系统的重复代码和降低模块之间的耦合度。切面就是那些与业务无关，但所有业务模块都会调用的公共逻辑。
+
+## AOP有哪些实现方式
+
+​	AOP有两种实现方式：静态代理和动态代理。
+
+## 静态代理
+
+​	静态代理：代理类在编译阶段生成，在编译阶段将同通知入java字节码中，也称为编译时增强。AspectJ使用的是静态代理。
+
+​	缺点：代理对象需要与目标对象实现一样的接口，并且实现接口的方法，会有冗余代码。同时，一旦接口增加方法，目标对象与代理对象都要维护。
+
+## 动态代理
+
+​	动态代理：代理类在程序运行时创建，AOP框架不会去修改字节码，而是在内存中临时生成一个代理对象，在运行期间对业务方法进行增强，不会生成新类。
+
+## JDK动态代理和CGLIB动态代理的区别
+
+​	Spring AOP中的动态代理主要有两种方式：JDK动态代理和CGLIB动态代理。
+
+### JDK动态代理
+
+​	如果目标类实现了接口，Spring AOP会选择使用JDK动态代理目标类。代理类根据目标类实现的接口动态生成，不需要自己编写，生成的动态代理类和目标类都实现相同的接口。JDK动态代理的核心是InvocationHandler接口和Proxy类。
+
+缺点：目标类必须有实现的接口。如果某个类没有实现接口，那个这个类就不能用JDK动态代理。
+
+### CGLIB来动态代理
+
+通过继承实现。如果目标类没有实现接口，那么Spring AOP会选择CGLIB来动态代理目标类，CGLIB（code Generation Libray）可以在运行时动态生成类的字节码，动态创建目标类的子类对象，在子类对象中增强目标类。
+
+CGLIB是通过继承的方式做的动态代理，因此如果某个类被标记为final，那么它是无法使用CGLIB做动态代理的。
+
+优点：目标类不需要实现特定的接口，更加灵活。
+
+什么时候采用哪种动态代理？
+
+1. 如果目标对象实现了接口，默认情况下会采用JDK的动态代理实现AOP
+2. 如果目标对象实现了接口，可以强制使用CGLIB实现AOP
+3. 如果目标对象没有实现接口，必须采用CGLIB库。
+
+两者区别：
+
+1. jdk动态代理使用jdk中的类Proxy来创建代理对象，它使用反射技术来实现，不需要导入其他依赖。cglib需要引入相关依赖：asm.jar，它使用字节码增强技术来实现。
+2. 当目标类实现了接口的时候，Spring Aop默认使用jdk动态代理方式来增强方法，没有实现接口的时候使用cglib动态代理方式增强方法。
+
+## Spring AOP相关术语
+
+1. 切面（Aspect）：切面是通知和切点的结合。通知和切点共同定义了切面的全部内容。
+2. 连接点（Join point）：指方法，在Spring AOP中，一个连接点总是代表一个方法的执行。连接点是在应用执行过程中能够插入切面的一个点。这个点可以是调用方法时、抛出异常时、甚至修改一个字段时。切面代码可以利用这些点插入到应用的正常流程之中，并添加新的行为。
+3. 通知（Advice）：在AOP术语中，切面的工作被称为通知。
+4. 切入点（Pointcut）：切点的定义会匹配通知所要织入的一个或多个连接点。我们通常使用明确的类和方法名称，或是利用正则表达式定义所匹配的类和方法名称类指定这些切点。
+5. 引入（introduction）：引入允许我们向现有类添加新方法或属性。
+6. 目标对象（Target Object）：被一个或者多个切面（aspect）所通知（advise）的对象。他通常是一个代理对象。
+7. 织入（Weaving）：织入是把切面应用到目标对象并创建新的代理对象的过程。在目标对象的生命周期里有以下时间点可以进行织入：
+   - 编译期：切面在目标类编译时被织入。AspectJ的织入编译器是以这种方式织入切面的。
+   - 类加载期：切面在目标类加载到JVM时被织入。需要特殊的类加载器，它可以在目标类被引入应用之前增强该目标类的字节码。AspectJ5的加载时织入就支持以这种方式织入切面。
+   - 运行期：切面在应用运行的某个时刻被织入。一般情况下，在织入切面时，AOP容器会为目标对象动态地创建一个代理对象。SpringAOP就是以这种方式织入切面。
+
+
+
+# 2022.2.9
+
+​	方法内定义的变量没有初始值，必须要进行初始化。类中定于的变量可以不需要赋予初始值，默认初始值为0；
+
+​	
+
+​	java中除了基本数据类型都是引用数据类型
+
+
+
+​	Number类可以被继承，Integer，Float，Double等都继承自Number类
+
+
+
+​	![](img/jvm.png)
+
+
+
+## Spring MVC的核心组件
+
+1. DispatcherServlet：中央控制器，把请求给转发到具体的控制类
+2. Controller：具体处理请求的控制器
+3. HandlerMapping：映射处理器，负责映射中央处理器转发给controller时的映射策略
+4. ModelAndView： 服务层返回的数据和视图层的封装类
+5. ViewResolver：视图解析器，解析具体的视图
+6. Interceptors: 拦截器，负责拦截我们定义的请求然后做处理工作
+
+![](img/SpringMVC工作流程.png)
+
+
+
+
+
+​	在Web应用中，服务器启动过程中会自动创建Spring容器。一个类实现ApplicationContextAware接口，重写setApplicationContext方法就可以获取到ApplicationContext对象。
+
+## 事务
+
+​	Spring 的事务实现依赖于aop，只有在public方法上才会生效
+
+参数描述：
+
+- readOnly该属性用于设置当前事务是否为只读事务，设置为true表示只读，false则表示可读写，默认值为false。例如：@Transactional（readOnly=true）
+
+- rollbackFor 该属性用于设置需要进行回滚的异常类数组，当方法中抛出指定异常数组中的异常时，则进行事务回滚。例如：指定单一异常类：@Transactional(rollbackFor=RuntimeException.class)指定多个异常类：@Transactional(rollbackFor={RuntimeException.class, Exception.class})
+- rollbackForClassName 该属性用于设置需要进行回滚的异常类名称数组，当方法中抛出指定异常名称数组中的异常时，则进行事务回滚。例如：指定单一异常类名称@Transactional(rollbackForClassName=”RuntimeException”)指定多个异常类名称：@Transactional(rollbackForClassName={“RuntimeException”,”Exception”})
+- noRollbackFor 该属性用于设置不需要进行回滚的异常类数组，当方法中抛出指定异常数组中的异常时，不进行事务回滚。例如：指定单一异常类：@Transactional(noRollbackFor=RuntimeException.class)指定多个异常类：@Transactional(noRollbackFor={RuntimeException.class, Exception.class})
+- noRollbackForClassName 该属性用于设置不需要进行回滚的异常类名称数组，当方法中抛出指定异常名称数组中的异常时，不进行事务回滚。例如：指定单一异常类名称：@Transactional(noRollbackForClassName=”RuntimeException”)指定多个异常类名称：@Transactional(noRollbackForClassName={“RuntimeException”,”Exception”})
+- propagation 该属性用于设置事务的传播行为。例如：@Transactional(propagation=Propagation.NOT_SUPPORTED,readOnly=true)
+- isolation 该属性用于设置底层数据库的事务隔离级别，事务隔离级别用于处理多事务并发的情况，通常使用数据库的默认隔离级别即可，基本不需要进行设置
+- timeout 该属性用于设置事务的超时秒数，默认值为-1表示永不超时
+
+
+
+
+
+getBean(String name)方法是从Spring容器中获取对应Bean对象的方法，如存在，则返回该对象。
+
+containsBean(String name)方法用于判断Spring容器中是否存在该对象。
+
+isSingleton(String name)方法用于判断Bean对象是否为单例对象
+
+## AOP织入
+
+​	织入是将增强添加对目标类具体连接点上的过程。AOP像一台织布机，将目标类、增强或引介通过AOP这台织布机天衣无缝地编织到一起。根据不同的实现技术，AOP有三种织入的方式： a、编译期织入，这要求使用特殊的Java编译器。 b、类装载期织入，这要求使用特殊的类装载器。 c、动态代理织入，在运行期为目标类添加增强生成子类的方式。 Spring采用动态代理织入，而AspectJ采用编译期织入和类装载期织入。
+
+
+
+# 2022.2.10
+
+jre判断程序是否执行结束的标准是所有前后线程执行完毕。
+
+
+
+抽象类不能实例化，可以有构造器。不必须有抽象方法，但是包含抽象方法的类一定是抽象类。
+
+
+
+## 构造方法
+
+### 特点
+
+- 构造方法名与类名相同
+- 构造方法没有返回值类型，也不写void
+- 构造方法可以重载
+
+### 作用
+
+- 在创建对象时，给属性赋初值
+- 构造方法在创建对象时被调用
+
+### 分类
+
+- 显示的构造方法和隐式的构造方法
+- 当声明了构造方法时，系统不会提供隐式的默认的无参构造方法
+
+
+
+运行异常，可以通过java虚拟机来自行处理。非运行异常，我们应该捕获或者抛出
+
+
+
+|        | public | protected | default | private |
+| ------ | ------ | --------- | ------- | ------- |
+| 同类   | √      | √         | √       | √       |
+| 同包   | √      | √         | √       |         |
+| 子类   | √      | √         |         |         |
+| 通用性 | √      |           |         |         |
+
+Java三大注解分别是@Override  @Deprecated  @Suppresswarnings
+
+
+
+2.@Override注解表名子类中覆盖了超类中的某个方法，如果写错了覆盖形式，编译器会报错
+
+3.@Deprecated 表明不希望别人在以后使用这个类，方法，变量等等
+
+4.@Suppresswarnings 达到抑制编译器产生警告的目的，但是不建议使用，因为后期编码人员看不懂编译器提示的警告，不能更好的选择更好的类去完成任务
+
+
+
+![](img/线程状态转换图.png)
+
+只有就绪状态和运行状态可以互相转换，其他都是单向的。
+
+
+
+# 2022.2.11
+
+Java 整数类型默认为int，带小数的默认double
+
+-d destination 目的地
+
+-s source 起源地
+
+javac -d 指定放置生成的类文件的位置
+
+javac -s 指定放置生成的源文件的位置
+
+off-heap叫做堆外内存，将你的对象从堆中脱离出来序列化，然后存储在一大块内存中，这就像它存储到磁盘上一样，但它仍然在RAM中。对象在这种状态下不能直接使用，它们必须首先反序列化，也不受垃圾收集。序列化和反序列化将会影响部分性能（所以可以考虑使用FST-serialization）使用堆外内存能够降低GC导致的暂停。堆外内存不受垃圾收集器管理，也不属于老年代，新生代。
+
+
+
+外部类前可以修饰：public、default、abstract、final
+
+内部类**前可以修饰：**public、protected、default、private、abstract、final、static
+
+局部内部类**前可以修饰：**abstract、final
+
+其中：访问修饰符（public、protected、default、private），其他都是非访问修饰符
+
+利用反射的方式可以调用父类的私有方法。
+
+
+
+# 2022.2.12
+
+向上转型，父类的引用无法访问子类独有的方法，
+
+
+
+switch中 byte short char int都会转成int判，1.5后支持String和enum
+
+
+
+session用来表示用户会话，session对象在服务端维护，一般tomcat设为session生命周期为30分钟，超时将失效，也可以主动设置无效；
+
+
+
+cookie存放在客户端，可以分为内存cookie和磁盘cookie。内存cookie在浏览器关闭后消失，磁盘cookie超时后消失。当浏览器发送请求时，将自动发送对应cookie信息，前提是请求url满足cookie路径； 3.可以将sessionId存放在cookie中，也可以通过重写url将sessionId拼接在url。因此可以查看浏览器cookie或地址栏url看到sessionId； 4.请求到服务端时，将根据请求中的sessionId查找session，如果可以获取到则返回，否则返回null或者返回新构建的session，老的session依旧存在，
+
+
+
+![](img/java关键字.png)
