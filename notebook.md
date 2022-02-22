@@ -3175,3 +3175,384 @@ this指当前对象。类方法依附于类而不是对象，所以类方法中�
 
 Integer类型在-128-->127范围之间是被缓存了的，也就是每个对象的内存地址是相同的，赋值就直接从缓存中取，不会有新的对象产生，而大于这个范围，将会重新创建一个Integer对象，也就是new一个对象出来，当然地址就不同了，也就！=；
 
+# 2022.2.18
+
+内部类一般来说分为4种：常规内部类，静态内部类，局部内部类、匿名内部类
+
+常规内部类：
+
+可以拥有private访问权限、protected访问权限、public访问权限及包访问权限
+
+```java
+public class C{
+    private int x=100；
+	//常规内部类
+	class MyInner{
+		//可以直接访问外部类中的实例变量
+        System.out.println(x);
+	}
+    public void makeInner(){
+        //在外部类方法中创建内部实例。
+        MyInner in = new MyInner();
+    }
+    public static void main(String[] args){
+        C mo= new C();
+        //常规内部类需要通过外部类的实例才能创建对象
+        C.MyInner inner = mo.new MyInner();
+    }
+}
+```
+
+静态内部类：
+
+```java
+public class C{
+	public static int x=100;
+	public static class MyInner{
+		public void innerMethod(){
+            //只能访问外部类的static成员，不能直接访问外部类的实例变量，与实例方法，只能通过对象引用才能访问
+            //也不能出现this关键字。
+			System.out.println(x);
+		}
+	}
+	public static void main(String[] args){
+        //静态内部类不通过外部实例就可以创建对象。
+		C.MyInner si = new C.MyInner();
+	}
+}
+```
+
+局部内部类：在方法体或语句块（包括方法、构造方局部块或静态初始化块）内部定义的类成为局部内部类。局部内部类不能加任何访问修饰符，因为它只对局部块有效。
+
+1. 局部内部类只在方法体中有效，在定义的方法体外不能创建局部内部类的对象
+2. 在方法内部定义类时，
+   1. 方法定义局部内部类同方法定义局部变量一样，不能使用private、protected、public等访问修饰符，也不能用static修饰，但可以使用final和abstract修饰。
+   2. 方法中的内部类可以访问外部类成员。对于方法的参数和局部变量，必须有final修饰才可以访问。
+   3. static方法中定义的内部类可以访问外部类定义的static成员。
+
+```java
+class m{
+	private int size=5,y=7;
+	public Object makeInner(int localVar){
+        final int finalLocalVar = localVar;
+		//创建内部类，该类只在makeInner()方法有效，就像局部变量一样。在方法体外部不能创建MyInner类的对象。
+		class MyInner{
+			public String toString(){
+				return "OuterSize:"+size+"\nfinalLocalVar"+finalLocalVar+"this.u="+this.y;
+			}
+		}
+        return new MyInner();
+	}
+}
+
+public class c{
+    public static void main(String[] args){
+        Object obj = new m().makerInner(47);
+        System.out.println(obj.toString());
+    }
+}
+```
+
+匿名内部类：定义类的最终目的是创建一个类的实例，但是如果某个类的实例只是用一次，则可以将类的定义与创建，放到一起完成。匿名内部类是不能有访问修饰符和static修饰符的；
+
+```java
+public class c{
+	private int size=5;
+	public Object makeInner(int localVar){
+		final int finalLocalVar = localVar;
+		return new Object(){
+			public String toString(){
+				return "OuterSze="+size+"\nfinalLocalVar="+finalLocalVar;
+			}
+		}
+	}
+	public static void main(String args[]){
+		Object obj = new c().makeInner(47);
+		System.out.println(obj.toString());
+	}
+}
+```
+
+Java体系结构包括四个独立但相关的技术：
+
+- Java程序设计语言
+- Java.class文件格式
+- Java应用编程接口（API）
+- Java虚拟机
+
+jsp的两种包含
+
+静态包含：
+
+```
+<%@include file=”include2.jsp”%>
+```
+
+动态包含：
+
+```
+<jsp:include page=”include2.jsp” flush=”true”>
+```
+
+
+
++=会自动强转，但是byte + byte 自动会转为 int
+
+实现接口需要遵循两同两小一大原则：
+
+方法名相同，参数类型相同
+
+子类返回类型小于等于父类
+
+子类抛出异常小于等于父类
+
+子类访问权限大于等于父类（public>protected>default>private）
+
+# 2022.2.19
+
+## 协程
+
+​	协程是一种比线程更加轻量级的存在。协程完全由程序所控制（在用户态执行），带来的好处是性能大幅度的提升。
+
+​	一个操作系统中可以有多个进程，一个进程可以有多个线程。同理，一个线程可以有多个协程。
+
+​	一个线程内的多个协程的运行是串行的，这点和多进程（多线程）在多核CPU上执行时是不同的。多进程（多线程）是多核CPU上是可以并行的。**当线程内的某一个协程运行时，其他协程必须挂起。**
+
+## 非对称加密算法
+
+​	该算法需要两个密钥：该算法需要两个密钥：公开密钥和私有密钥。公开密钥与私有密钥是一对，如果用公开密钥对数据进行加密，只有用对应的私有密钥才能解密；如果用私有密钥对数据进行加密，那么只有用对应的公开密钥才能解密。因为加密和解密使用的是两个不同的密钥，所以这种算法叫作非对称加密算法。
+
+## NAT
+
+​	NAT（Network Address Translation），是指网络地址转换。 当在专业内部的一些主机本来已经分配到了本地IP地址（即仅在本专用网内使用的专用地址），但又想和因特网上的主机通信（并不需要加密）时，可使用NAT方法。通过使用少量的全球IP地址（公网IP地址）代表较多的私有IP地址的方式，将有助于减缓可用的IP地址空间的枯竭
+
+
+
+## 流量控制（接收端）
+
+​	接收端接收数据的时候，会先将数据保存在接收缓冲区中，等待应用程序调用recv()方法读取。如果接收缓冲区内的数据一直没有被应用进程读取，接收缓冲区空间被填满，发送端再发送数据的话，就会引起丢包等一系列的连锁问题。
+
+为避免这种问题的发生，TCP中可以根据接收端的处理数据的数据和能力，来决定发送端的发送速度，这个机制就叫做流量控制。
+
+## 拥塞控制（发送端）
+
+虽然TCP中有了滑动窗口这个机制可以保证数据高效可靠的发送大量数据。但如果建立完连接一开始就发送大量数据，还是会引发一些问题。
+
+由于网络上存在很多的计算机，也许当前的网络状态已经比较拥堵了，在这种不知道当前网络状态的情况下，“无脑”地发送大量数据，可能会对当前网络产生很大的冲击
+
+##### 2.1 拥塞窗口
+
+TCP中有一个慢启动机制，他会先发送少量数据，探测一下当前网络的状态，摸清网络状况以后，再决定传输数据的速度和大小。
+
+在发送端存在一个**拥塞窗口**，每次发送数据包的时候，发送端会将拥塞窗口大小和接收端反馈的窗口大小进行一个对比，根据两者的最小值来进行数据的发送。
+
+拥塞控制其实就是TCP为了保证更快的把数据传输给对方，但同时也要考虑到当前的网络拥堵状况。
+
+
+
+基数排序 提前给好数据位置 然后依次放进去，用大量空间换取时间。性能与元素初始排序次序无关。
+
+# 2022.2.20
+
+
+
+## ICMP
+
+​	ICMP（Internet Control Message Protocol）Internet控制[报文](https://baike.baidu.com/item/报文/3164352)协议。它是[TCP/IP协议簇](https://baike.baidu.com/item/TCP%2FIP协议簇)的一个子协议，用于在IP[主机](https://baike.baidu.com/item/主机/455151)、[路由](https://baike.baidu.com/item/路由)器之间传递控制消息。控制消息是指[网络通](https://baike.baidu.com/item/网络通)不通、[主机](https://baike.baidu.com/item/主机/455151)是否可达、[路由](https://baike.baidu.com/item/路由/363497)是否可用等网络本身的消息。这些控制消息虽然并不传输用户数据，但是对于用户数据的传递起着重要的作用。（主要目的是测定信息是否到达其目的地，若没有达到，则确定是什么原因）
+
+
+
+## 协议端口
+
+	HTTP协议代理服务器常用端口号：80/8080/3128/8081/9080
+	SOCKS代理协议服务器常用端口号：1080
+	FTP（文件传输）协议代理服务器常用端口号：21
+	Telnet（远程登录）协议代理服务器常用端口：23
+
+
+## 一些协议
+
+SMTP是简单邮件传输协议，是一种TCP协议支持的提供可靠且有效电子邮件传输的应用层协议；
+
+HTTP协议是超文本传输协议，用于从WWW服务器传输超文本到本地浏览器的传送协议；
+URL:用户输入的链接如[www.baidu.com](http://www.baidu.com/)就是一个URL，也叫统一资源定位符;
+
+
+
+## 网络划分
+
+**广域网WAN（Wide Area Network）** 作用范围几十到几千公里，是因特网的核心部分
+
+**城域网MAN(Metropolitan Area Network)** 作用范围是城市，很多城域网采用以太网的技术，因此也可纳入局域网的范围。
+
+**局域网LAN(Local Area Network)** 学校，企业等
+
+**个人区域网PAN(Personal Area Network）**个人工作的地方连接个人的电子设备。
+
+
+
+## 数据通信网
+
+DDN是“Digital Data Network”，数字数据网。
+
+ISDN 是“Integrated Services Digital Network”，综合业务数字网。
+
+
+
+## 服务器
+
+WEB服务器：WEB服务器也称为WWW(WORLD WIDE WEB)服务器，**主要功能是提供网上信息浏览服务。**
+
+DNS服务器：DNS（Domain Name Server，域名服务器）是进行域名(domain name)和与之相对应的IP地址 (IP address)转换的服务器。
+
+FTP服务器：FTP是用来在两台计算机之间传输文件
+
+
+
+## 路由器内存分类
+
+ROM：    只读内存（不能修改其存放的代码），主要用于**系统初始化**；
+
+FLASH：  闪存，可读可写，存放着当前使用中的**IOS（互联网操作系统），**若容量足够大，甚至可以存放多个操作系统；
+
+NVRAM：  非易失性(Nonvolatile)RAM，可读可写，**仅保存启动配置文件**，通常大小为32KB~128KB，速度快，成本高；
+
+RAM：    随机存储器，可读可写，但存储内容在系统重启、关机后将被清除（上两个都可以保存），运行速度高于前三个；RAM运行时，包含**路由表项目，ARP缓冲项目，日志项目**，**队列中排队等待发送的分组**；除此之外，还包括运行配置文件（Running-config）、正在执行的代码、IOS操作系统程序和一些临时数据信息。
+
+ARP（Address Resolution Protocol，地址解析协议）是将IP地址解析为以太网MAC地址（或称物理地址）的协议
+
+
+
+## 数据链路层功能
+
+**主要功能（前五个为重点）：用于两个设备(同一种数据链路节点)之间进行信息传递。**
+
+**1.成帧(帧同步)：了避免接收到的位数量以及数值发生异常。**
+
+**2. 差错控制：为了确保数据通信的准确，降低错误发生的几率。**
+
+**3. 流量控制：了确保数据通信的有序进行，避免通信过程中不会出现接收方来不及接收而造成数据丢失。**
+
+**4. 链路控制：包括数据链路的建立、链路的维持和释放，**
+
+**5. MAC寻址：寻找地址是计算机网卡的\*MAC\*地址，与寻址ip地址不同**
+
+**6.区分数据和控制信息：在许多情况下，数据和控制信息处于同一帧中**
+
+# 2022.2.21
+
+
+
+
+
+实现Runnable接口的类，需要用Thread的构造方法，才能实例化线程。
+
+  Thread(Runnable target) 
+  Thread(Runnable target, String name) 
+  Thread(ThreadGroup group, Runnable target) 
+  Thread(ThreadGroup group, Runnable target, String name) 
+  Thread(ThreadGroup group, Runnable target, String name, long stackSize)
+
+启动时时start（）方法，而不是run
+
+
+
+面向对象方法的多态性是指针对一消息，不同的对象可以合适自身的方式加以响应。
+
+
+
+throw用于抛出异常，
+
+throws关键字是在方法上声明该方法要抛出的异常。
+
+
+
+sleep（）会抱着锁睡觉，wait会把锁释放
+
+
+
+**Hashtable**：
+
+（1）Hashtable 是一个散列表，它存储的内容是键值对(key-value)映射。
+
+（2）Hashtable 的函数都是同步的，这意味着它是**线程安全**的。它的key、value都不可以为null。
+
+（3）HashTable直接使用对象的hashCode。
+
+```
+public class Hashtable<K,V> extends Dictionary<K,V>
+    implements Map<K,V>, Cloneable, java.io.Serializable
+```
+
+**HashMap：**
+
+（1）由**数组+链表**组成的，基于**哈希表的Map**实现，数组是HashMap的主体，链表则是主要为了解决哈希冲突而存在的。
+
+（2）不是线程安全的，HashMap可以接受为null的键(key)和值(value)。
+
+（3）HashMap重新计算hash值
+
+```
+public class HashMap<K,V>extends AbstractMap<K,V> implements Map<K,V>, Cloneable, Serializable
+```
+
+
+
+接口中的变量默认是public static final 的
+
+threadlocalmap使用开放定址法解决haah冲突，hashmap使用链地址法解决hash冲突
+
+
+
+
+
+抽象类可以有构造方法，接口不能有构造方法。
+
+抽象类：用abstract修饰，抽象类中可以没有抽象方法，但抽象方法肯定在抽象类中，且抽象方法定义时不能有方法体；抽象类不可以实例化只能通过继承在子类中实现其所有的抽象方法；抽象类如果不被继承就没有任何意义；抽象类为子类定义了一个公共类型，封装了子类中的重复内容。
+接口:同Interface关键字定义接口，是特殊的抽象类因为类中只包含抽象方法；接口中不能定义成员变量可以定义常量；接口是其通过其他类使用implements关键字定义实现类，一个类一旦实现接口就必须实现其中的所有抽象方法，一个类可以实现多个接口，接口名之间用逗号隔开即可；一个接口可以通过extends关键字继承另一个接口，与此同时继承了父类中的所有方法。
+
+
+
+redirect默认将产生301 Permanently moved的HTTP响应
+
+
+
+# 2022.2.2
+
+
+
+```
+                         【interface】Conllection
+              			            /|\
+              			             |
+              			             |
+   [interface] SortedMap ——————▷  [interface]  Map 	◁———————— [interface] ConcurrentMap		  
+                                      
+                                     /|\                                  
+             |	 		              |                                   
+             |			              |-------- HashTable
+             | 						  |	
+  [interface] NavigableMap        AbstractMap           
+```
+
+TreeMap 通过红黑树实现Map接口，key不可以为null。value可以为空
+
+ConcurrentMap（线程安全）key和vlaue都不能为空。
+
+
+
+总结
+
+基于哈希表的Map结构值和键都可以为空,但是键只能一次为空.
+
+基于红黑树的Map结构,键不可以为空,值可以为空.
+
+基于线程安全的Map结构中,键和值都不能为空
+
+
+
+static final 可以表达在一起来修饰方法，表示是该方法是静态的不可重写的方法
+
+
+
+char < short < int < float < double 不同类型运算结果类型向右边靠齐。
